@@ -1,49 +1,53 @@
 # GitHub-Final Platform Controls Acceptance — 2026-07-23
 
-Status: `REVALIDATING_REQUIRED_CHECK_BINDING`
+Status: `PASS_PLATFORM_CONTROLS`
 
 ## Evidence basis
 
-The repository owner completed the platform settings and supplied owner-view screenshots for the effective repository configuration. Connected repository metadata was then re-read after the change.
+The repository owner completed the platform settings and supplied owner-view screenshots for the effective repository configuration. Connected repository metadata and protected-merge behavior were then independently rechecked.
 
-The evidence confirms:
+The accepted configuration includes:
 
-- an active ruleset targets the default branch (`main`);
-- pull requests are required before merge;
-- conversation resolution is required;
-- the intended required status checks are `ci / required`, `dependency-review / dependency review`, and `codeql / analyze / python`;
-- branches must be up to date before merge;
-- force pushes and branch deletion are blocked;
-- no routine bypass entry is configured;
-- linear history is required and the ruleset permits squash only;
-- repository-level merge commits and rebase merges are disabled;
-- squash merge remains enabled;
-- pull-request branch update suggestions are enabled;
-- dependency graph, Dependabot alerts and Dependabot security updates are enabled;
-- private vulnerability reporting is enabled;
-- CodeQL advanced setup is active and passing;
-- the owner confirmed secret scanning and push protection after completing the requested settings.
+- an active ruleset targeting the default branch (`main`);
+- pull requests required before merge;
+- conversation resolution required;
+- branches required to be up to date before merge;
+- force pushes and branch deletion blocked;
+- no routine bypass entry;
+- linear history and squash-only normal merge policy;
+- repository-level merge commits and rebase merge disabled;
+- pull-request branch update suggestions enabled;
+- dependency graph, Dependabot alerts and Dependabot security updates enabled;
+- private vulnerability reporting enabled;
+- secret scanning and push protection confirmed by the owner;
+- CodeQL advanced setup active and passing.
+
+## Stable required-check identities
+
+The protected branch requires these exact GitHub Actions check-run contexts:
+
+- `ci / required`;
+- `dependency-review / dependency review`;
+- `codeql / analyze / python`.
+
+The workflow job names were explicitly pinned to those contexts. A fresh validation set completed successfully and the protected merge endpoint then recognized the checks, first reporting only the still-running dependency check and subsequently accepting the squash merge after completion.
 
 ## Independent metadata confirmation
 
-After the owner changes, repository metadata independently reported:
+Repository metadata reported:
 
 - `allow_merge_commit = false`;
 - `allow_rebase_merge = false`;
 - `allow_squash_merge = true`;
 - `allow_update_branch = true`.
 
-## Required-check binding revalidation
+## Protected merge proof
 
-A protected merge attempt previously reported all three required checks as `expected` despite successful workflow runs. The owner then removed and reselected the three checks from the current GitHub Actions identities, with `GitHub Actions` shown as the source for each check.
+GitHub-Final PR #10 merged through the protected squash-only workflow without bypass.
 
-To remove any ambiguity between workflow labels and check-run identities, the three blocking jobs now publish explicit stable check-run names matching the ruleset contexts exactly:
-
-- `ci / required`;
-- `dependency-review / dependency review`;
-- `codeql / analyze / python`.
-
-This documentation commit intentionally triggers a fresh PR validation set after those workflow-name changes. GitHub-Final will accept the binding only when the latest head receives successful CI, Dependency Review and CodeQL results and the protected squash merge recognizes them.
+- accepted head: `02498bcf7ad3e50b46e07c0f1736e84f61bfd790`;
+- resulting main commit: `012ffbbe0271712408caeae93cd9b6e72fe0ee76`;
+- Issue #2: closed as completed after merge proof.
 
 ## Administrator and emergency posture
 
@@ -51,4 +55,4 @@ The ruleset has no routine bypass entry. Emergency owner intervention, if ever r
 
 ## Decision
 
-The platform configuration is provisionally accepted and is undergoing final required-check binding revalidation. Issue #2 remains open until the protected merge gate recognizes all three successful checks. This acceptance does not authorize private project data, reports, identifiers, paths, hashes, cloud links or business facts to enter the public repository or its workflow artifacts.
+Repository governance, security settings, stable required checks and protected-merge enforcement satisfy the GitHub-Final platform-control gate. This acceptance does not authorize private project data, reports, identifiers, paths, hashes, cloud links or business facts to enter the public repository or its workflow artifacts.

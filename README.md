@@ -25,12 +25,14 @@ Schema contract version: `v1.0.0`
 CLI contract version: `v1.0.0`  
 Release package format: `v1.0.0`  
 Private-project replay: `PASS_FOR_GITHUB5_FINAL`  
-Repository platform controls: `CONDITIONAL_PASS_REQUIRED_CHECK_REBINDING`  
-Operational release: `BLOCKED_PROTECTED_MERGE_GATE`
+Repository platform controls: `PASS_PLATFORM_CONTROLS`  
+Operational release: `PASS_FOR_OPERATIONAL_RELEASE`  
+Immutable release tag: `core-v1.5.0`  
+Release commit: `012ffbbe0271712408caeae93cd9b6e72fe0ee76`
 
-The complete authoritative private-project baseline has passed deterministic build, two-release promotion, Current/Last-success/Archive reconciliation, rollback, crash recovery, cross-project contamination rejection and tamper detection without exporting private project content to GitHub.
+The complete authoritative private-project replay passed deterministic build, two-release promotion, Current/Last-success/Archive reconciliation, rollback, crash recovery, cross-project contamination rejection and tamper detection without exporting private project content to GitHub.
 
-GitHub-Final governance and security controls are accepted except for effective required-check binding. PR #10 has successful CI, Dependency Review and CodeQL runs, but the protected merge gate still reports the three checks as expected. The ruleset checks must be rebound before merge, immutable tag creation and final release verification. See `docs/github-final-checklist.md`.
+GitHub-Final passed protected squash merge, stable required-check enforcement, immutable tag creation, checksummed wheel and source-distribution publication, provenance attestation, release-asset verification and clean installation. The initial development program for IntelliDue Production Baseline v1.0.0 and Public Core v1.5.0 is complete and the system is in operational, versioned-maintenance status. See `docs/acceptance/github-final-acceptance-20260723.md` and `docs/acceptance/github-final-release-lock-20260723.json`.
 
 ## Operating model
 
@@ -97,9 +99,9 @@ The runtime is permanently bound to one `project_id`, stores immutable private r
 
 ## Security and release governance
 
-Pull requests are tested across supported Python versions and are subject to package-security regression checks, dependency review and CodeQL analysis. Tag-driven release automation builds wheel and source distributions, verifies checksums and package metadata, creates provenance attestations and publishes a GitHub Release only for an existing `core-vX.Y.Z` tag.
+Pull requests are tested across supported Python versions and are subject to package-security regression checks, dependency review and CodeQL analysis. Stable protected-merge contexts are `ci / required`, `dependency-review / dependency review` and `codeql / analyze / python`. Release assets are published under immutable `core-vX.Y.Z` tags with SHA-256 checksums, package metadata and provenance attestations.
 
-Repository-level administrative controls and the remaining required-check binding defect are recorded in `docs/acceptance/github-final-platform-controls-20260723.md` and repository issue #2.
+Repository-level administrative controls are accepted for GitHub-Final and recorded in `docs/acceptance/github-final-platform-controls-20260723.md` and repository issue #2.
 
 ## Licensing
 

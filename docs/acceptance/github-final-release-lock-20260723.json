@@ -1,0 +1,49 @@
+{
+  "acceptance_status": "PASS_FOR_OPERATIONAL_RELEASE",
+  "accepted_at": "2026-07-23",
+  "core_version": "1.5.0",
+  "production_product_standard": "1.0.0",
+  "schema_contract_version": "1.0.0",
+  "cli_contract_version": "1.0.0",
+  "release_package_format": "1.0.0",
+  "private_runtime_adapter_contract": "1.0.0",
+  "release_tag": "core-v1.5.0",
+  "release_commit": "012ffbbe0271712408caeae93cd9b6e72fe0ee76",
+  "release_url": "https://github.com/jl2642/intellidue-core/releases/tag/core-v1.5.0",
+  "release_published": true,
+  "release_is_draft": false,
+  "release_is_prerelease": false,
+  "protected_merge": {
+    "pull_request": 10,
+    "accepted_head": "02498bcf7ad3e50b46e07c0f1736e84f61bfd790",
+    "method": "squash",
+    "bypass_used": false,
+    "required_checks": {
+      "ci / required": "PASS",
+      "dependency-review / dependency review": "PASS",
+      "codeql / analyze / python": "PASS"
+    }
+  },
+  "release_assets": {
+    "intellidue_core-1.5.0-py3-none-any.whl": "2f99715a6bb6810c1af0c260f6f9794a54d7728fc24e3b51aca39dfb07e351ef",
+    "intellidue_core-1.5.0.tar.gz": "091841a5a43626302f3e27d1a3951ccf0059c8248ea0459b496010108906b009",
+    "release-metadata.json": "b9d80bd04160ebbf70f7aba51bd43535528b13855bb5f9f494062f600aec333f"
+  },
+  "verification": {
+    "source_tests": "PASS",
+    "repository_hygiene": "PASS",
+    "distribution_metadata": "PASS",
+    "candidate_clean_install": "PASS",
+    "published_asset_checksum_verification": "PASS",
+    "published_wheel_clean_install": "PASS",
+    "provenance_attestation": "PASS",
+    "private_project_content_exported": false
+  },
+  "product_boundary": {
+    "chatgpt_is_professional_analysis_engine": true,
+    "github_core_is_project_neutral_control_layer": true,
+    "real_project_data_allowed_in_public_repository": false,
+    "final_full_dd_is_project_evidence_and_signoff_gated": true
+  },
+  "completion_meaning": "Initial development is complete; controlled operations and versioned maintenance begin."
+}
