@@ -1,0 +1,166 @@
+name: github-final-release-bootstrap
+
+on:
+  push:
+    branches: [github-final/release-bootstrap]
+    paths:
+      - '.github/workflows/github-final-release-bootstrap.yml'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+env:
+  TARGET_COMMIT: 012ffbbe0271712408caeae93cd9b6e72fe0ee76
+  RELEASE_TAG: core-v1.5.0
+
+jobs:
+  release:
+    name: create immutable operational release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout accepted main commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET_COMMIT }}
+          fetch-depth: 0
+
+      - name: Verify target remains current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          main_sha="$(git ls-remote origin refs/heads/main | cut -f1)"
+          test "$main_sha" = "$TARGET_COMMIT"
+          test "$(git rev-parse HEAD)" = "$TARGET_COMMIT"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install build and validation tools
+        run: python -m pip install --upgrade pip build twine
+
+      - name: Install package and run full tests
+        run: |
+          python -m pip install -e .
+          python -m unittest discover -s tests -v
+          python scripts/check_repo_hygiene.py
+
+      - name: Validate release policy and version
+        run: python scripts/release_gate.py --tag "$RELEASE_TAG" --output release-metadata.json --commit "$TARGET_COMMIT"
+
+      - name: Build wheel and source distribution
+        run: python -m build
+
+      - name: Validate distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Assemble and verify checksummed release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir release-assets
+          cp dist/* release-assets/
+          cp release-metadata.json release-assets/
+          (cd release-assets && sha256sum intellidue_core-* release-metadata.json | sort -k2 > SHA256SUMS)
+          (cd release-assets && sha256sum -c SHA256SUMS)
+
+      - name: Clean-install release candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/intellidue-release-smoke"
+          "$RUNNER_TEMP/intellidue-release-smoke/bin/python" -m pip install release-assets/*.whl
+          "$RUNNER_TEMP/intellidue-release-smoke/bin/intellidue" version
+          "$RUNNER_TEMP/intellidue-release-smoke/bin/intellidue" validate-private-project --project-root tests/fixtures/synthetic_private_project
+
+      - name: Create immutable tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Tag already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git tag -a "$RELEASE_TAG" "$TARGET_COMMIT" -m "IntelliDue Core v1.5.0 operational release"
+          git push origin "refs/tags/$RELEASE_TAG"
+
+      - name: Upload release evidence artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: intellidue-core-${{ env.RELEASE_TAG }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Generate build provenance attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: release-assets/*
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release create "$RELEASE_TAG" release-assets/* --verify-tag --generate-notes --title "$RELEASE_TAG"
+
+      - name: Verify published release assets and clean install
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release view "$RELEASE_TAG" --json tagName,url,isDraft,isPrerelease,publishedAt > release-view.json
+          mkdir downloaded-release
+          gh release download "$RELEASE_TAG" --dir downloaded-release
+          (cd downloaded-release && sha256sum -c SHA256SUMS)
+          python -m venv "$RUNNER_TEMP/intellidue-published-smoke"
+          "$RUNNER_TEMP/intellidue-published-smoke/bin/python" -m pip install downloaded-release/*.whl
+          "$RUNNER_TEMP/intellidue-published-smoke/bin/intellidue" version
+
+      - name: Record public-safe bootstrap result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          release = json.loads(Path('release-view.json').read_text(encoding='utf-8'))
+          checksums = {}
+          for line in Path('release-assets/SHA256SUMS').read_text(encoding='utf-8').splitlines():
+              digest, name = line.split(maxsplit=1)
+              checksums[name.lstrip('*')] = digest
+          result = {
+              'status': 'PASS_RELEASE_BOOTSTRAP',
+              'release_tag': os.environ['RELEASE_TAG'],
+              'target_commit': os.environ['TARGET_COMMIT'],
+              'workflow_run_id': os.environ['GITHUB_RUN_ID'],
+              'release': release,
+              'checksums': checksums,
+              'distribution_metadata': 'PASS',
+              'source_tests': 'PASS',
+              'repository_hygiene': 'PASS',
+              'candidate_clean_install': 'PASS',
+              'published_asset_checksum_verification': 'PASS',
+              'published_wheel_clean_install': 'PASS',
+              'provenance_attestation': 'PASS',
+              'private_project_content_exported': False,
+          }
+          Path('github-final-release-bootstrap-result.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          PY
+          content="$(base64 -w0 github-final-release-bootstrap-result.json)"
+          gh api --method PUT \
+            "repos/$GITHUB_REPOSITORY/contents/docs/acceptance/github-final-release-bootstrap-result.json" \
+            -f message='chore: record GitHub-Final release bootstrap result' \
+            -f content="$content" \
+            -f branch='github-final/release-bootstrap'
