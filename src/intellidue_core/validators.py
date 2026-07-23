@@ -1,37 +1,65 @@
 from __future__ import annotations
-from pathlib import Path
-import hashlib, json, zipfile
 
-STATE_REQUIRED = {"system","project_id","project_name","status","accepted_product_class","project_boundaries","next"}
-LOCK_REQUIRED = {"release","status","release_class","hard_controls","next"}
+import hashlib
+from pathlib import Path
+import zipfile
+
+from .contracts import ValidationIssue, validate_contract_files, validate_document
+
 
 def sha256(path: str | Path) -> str:
     h = hashlib.sha256()
-    with Path(path).open("rb") as f:
-        for chunk in iter(lambda: f.read(1024*1024), b""):
+    with Path(path).open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
 
-def validate_state(path: str | Path) -> list[str]:
-    obj = json.loads(Path(path).read_text(encoding="utf-8"))
-    errors = [f"missing:{k}" for k in sorted(STATE_REQUIRED - set(obj))]
-    pb = obj.get("project_boundaries", {})
-    for k in ("critical_gates_open","restricted_outputs","decision_ready"):
-        if k not in pb: errors.append(f"missing:project_boundaries.{k}")
-    return errors
 
-def validate_release_lock(path: str | Path) -> list[str]:
-    obj = json.loads(Path(path).read_text(encoding="utf-8"))
-    return [f"missing:{k}" for k in sorted(LOCK_REQUIRED - set(obj))]
+def validate_state(path: str | Path) -> list[ValidationIssue]:
+    return validate_document("state", path)
 
-def validate_zip(path: str | Path) -> list[str]:
-    errors=[]
-    with zipfile.ZipFile(path) as z:
-        bad=z.testzip()
-        if bad: errors.append(f"corrupt:{bad}")
-        names=z.namelist()
-        roots={n.split('/',1)[0] for n in names if n}
-        if len(roots)!=1: errors.append("not_single_root")
-        for n in names:
-            if n.startswith('/') or '..' in Path(n).parts: errors.append(f"unsafe_path:{n}")
-    return errors
+
+def validate_release_lock(path: str | Path) -> list[ValidationIssue]:
+    return validate_document("lock", path)
+
+
+def validate_package_validation(path: str | Path) -> list[ValidationIssue]:
+    return validate_document("validation", path)
+
+
+def validate_manifest(path: str | Path) -> list[ValidationIssue]:
+    return validate_document("manifest", path)
+
+
+def validate_zip(path: str | Path) -> list[ValidationIssue]:
+    path = Path(path)
+    if not path.exists():
+        return [ValidationIssue("FILE_NOT_FOUND", "$", f"file not found: {path}")]
+    issues: list[ValidationIssue] = []
+    try:
+        with zipfile.ZipFile(path) as archive:
+            bad = archive.testzip()
+            if bad:
+                issues.append(ValidationIssue("PACKAGE_CORRUPT", "$", f"corrupt member: {bad}"))
+            names = archive.namelist()
+            roots = {name.split("/", 1)[0] for name in names if name}
+            if len(roots) != 1:
+                issues.append(ValidationIssue("PACKAGE_NOT_SINGLE_ROOT", "$", "ZIP must contain exactly one root"))
+            for name in names:
+                if name.startswith("/") or ".." in Path(name).parts:
+                    issues.append(ValidationIssue("PACKAGE_UNSAFE_PATH", "$", f"unsafe ZIP path: {name}"))
+    except zipfile.BadZipFile as exc:
+        issues.append(ValidationIssue("PACKAGE_INVALID_ZIP", "$", str(exc)))
+    return sorted(set(issues))
+
+
+__all__ = [
+    "ValidationIssue",
+    "sha256",
+    "validate_state",
+    "validate_release_lock",
+    "validate_package_validation",
+    "validate_manifest",
+    "validate_contract_files",
+    "validate_zip",
+]
