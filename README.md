@@ -11,14 +11,15 @@ It defines:
 - atomic promotion, rollback and crash recovery;
 - Reader/Control separation;
 - clean-room state recovery;
-- public/private data boundaries.
+- public/private data boundaries;
+- CI, security scanning and reproducible release controls.
 
 This repository intentionally contains no real project data or reports.
 
 ## Status
 
 Production product standard: `v1.0.0`  
-Public-core CLI/package version: `v1.3.0`  
+Public-core CI/security/release version: `v1.4.0`  
 Schema contract version: `v1.0.0`  
 CLI contract version: `v1.0.0`  
 Release package format: `v1.0.0`
@@ -61,6 +62,16 @@ intellidue rollback --workspace ./runtime --release-id v1 --reason "regression" 
 ```
 
 The promotion engine writes immutable release directories, deterministic manifests, Current/Last-success pointers, an Archive index and transaction journals. Promotion failures restore the prior pointers and remove an unaccepted release. An unfinished journal requires `intellidue recover` before another writer may proceed.
+
+## Security and release governance
+
+Pull requests are tested across supported Python versions and are subject to package-security regression checks, dependency review and CodeQL analysis. Tag-driven release automation builds wheel and source distributions, verifies checksums and package metadata, creates provenance attestations and publishes a GitHub Release only for an existing `core-vX.Y.Z` tag.
+
+Repository-level administrative controls are tracked separately because they cannot be represented completely in source files. See `docs/repository-settings.md` and repository issue #2.
+
+## Licensing
+
+This public repository deliberately has **no software license**. Public visibility does not grant permission to copy, modify, distribute, sublicense or commercially reuse the code. See `NO_LICENSE.md`.
 
 ## Product boundary
 
