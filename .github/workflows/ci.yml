@@ -111,6 +111,12 @@ jobs:
           cache: pip
       - name: Build tools
         run: python -m pip install --upgrade pip build twine
+      - name: Validate release policy snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'import pathlib,re; text=pathlib.Path("src/intellidue_core/__init__.py").read_text(); print(re.search(r"__version__\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]", text).group(1))')"
+          python scripts/release_gate.py --tag "core-v${version}" --output release-metadata.json --commit "$GITHUB_SHA"
       - name: Build wheel and source distribution
         run: python -m build
       - name: Check distribution metadata
@@ -119,7 +125,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sha256sum dist/* | sort -k2 > SHA256SUMS
+          sha256sum dist/* release-metadata.json | sort -k2 > SHA256SUMS
           sha256sum -c SHA256SUMS
       - name: Install built wheel in clean environment
         shell: bash
@@ -134,6 +140,7 @@ jobs:
           name: intellidue-core-${{ github.sha }}
           path: |
             dist/*
+            release-metadata.json
             SHA256SUMS
           if-no-files-found: error
           retention-days: 14
