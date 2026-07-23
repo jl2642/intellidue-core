@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "SYNTHETIC_PROJECT_001",
+  "release": "SYNTHETIC_RELEASE",
+  "status": "CURRENT",
+  "release_class": "PRELIMINARY_RED_FLAG",
+  "accepted_product_class": "PRELIMINARY_RED_FLAG_DD",
+  "hard_controls": {
+    "critical_gates_open": 1,
+    "restricted_outputs": ["Final valuation"],
+    "decision_ready": false
+  },
+  "next": "Evidence closure"
+}

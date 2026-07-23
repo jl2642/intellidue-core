@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "SYNTHETIC_PROJECT_001",
+  "status": "PASS",
+  "tests": {"passed": 1, "failed": 0},
+  "non_regression": {
+    "critical_gates_open": 1,
+    "restricted_outputs": ["Final valuation"],
+    "decision_ready": false
+  }
+}

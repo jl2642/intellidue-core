@@ -4,13 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "intellidue-core"
-version = "1.0.1"
+version = "1.1.0"
 description = "Project-neutral due-diligence production controls"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["jsonschema>=4.22,<5"]
 
 [project.scripts]
 intellidue = "intellidue_core.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+intellidue_core = ["schemas/*.json"]
