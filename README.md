@@ -23,7 +23,23 @@ Production product standard: `v1.0.0`
 Public-core private-runtime-adapter version: `v1.5.0`  
 Schema contract version: `v1.0.0`  
 CLI contract version: `v1.0.0`  
-Release package format: `v1.0.0`
+Release package format: `v1.0.0`  
+Private-project replay: `PASS_FOR_GITHUB5_FINAL`  
+Repository platform controls: `CONDITIONAL_PASS_REQUIRED_CHECK_REBINDING`  
+Operational release: `BLOCKED_PROTECTED_MERGE_GATE`
+
+The complete authoritative private-project baseline has passed deterministic build, two-release promotion, Current/Last-success/Archive reconciliation, rollback, crash recovery, cross-project contamination rejection and tamper detection without exporting private project content to GitHub.
+
+GitHub-Final governance and security controls are accepted except for effective required-check binding. PR #10 has successful CI, Dependency Review and CodeQL runs, but the protected merge gate still reports the three checks as expected. The ruleset checks must be rebound before merge, immutable tag creation and final release verification. See `docs/github-final-checklist.md`.
+
+## Operating model
+
+ChatGPT in the authorized private project workspace remains the analysis and professional production engine. IntelliDue Core freezes project-neutral controls and supplies deterministic validation, promotion, rollback, recovery, privacy and non-regression infrastructure. It does not perform due-diligence analysis or generate Reader content.
+
+- `docs/operating-model.md`
+- `docs/new-project-runbook.md`
+- `docs/private-data-assurance.md`
+- `docs/private-file-retention.md`
 
 ## Quick check
 
@@ -79,13 +95,11 @@ intellidue inspect-private-runtime --runtime /private/runtime
 
 The runtime is permanently bound to one `project_id`, stores immutable private releases under its own local `core/` workspace, reconciles control hashes and product receipts, and reuses the accepted Current/Archive/Last-success, rollback and recovery engine. The adapter packages existing controlled products; it does not perform due-diligence analysis or generate Reader content.
 
-GitHub-4 is validated only with synthetic fixtures. Real private-project replay remains a separate GitHub-5 acceptance step.
-
 ## Security and release governance
 
 Pull requests are tested across supported Python versions and are subject to package-security regression checks, dependency review and CodeQL analysis. Tag-driven release automation builds wheel and source distributions, verifies checksums and package metadata, creates provenance attestations and publishes a GitHub Release only for an existing `core-vX.Y.Z` tag.
 
-Repository-level administrative controls are tracked separately because they cannot be represented completely in source files. See `docs/repository-settings.md` and repository issue #2.
+Repository-level administrative controls and the remaining required-check binding defect are recorded in `docs/acceptance/github-final-platform-controls-20260723.md` and repository issue #2.
 
 ## Licensing
 

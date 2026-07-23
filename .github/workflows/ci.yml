@@ -162,7 +162,7 @@ jobs:
           retention-days: 14
 
   required:
-    name: required
+    name: ci / required
     if: always()
     needs: [test, security-regressions, contract-smoke, build]
     runs-on: ubuntu-latest
