@@ -11,6 +11,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from intellidue_core import __version__
 from intellidue_core.package_format import PackageLimits, build_release_package, extract_release_package, inspect_package, validate_package
 
 
@@ -137,7 +138,7 @@ class TestCLIContract(unittest.TestCase):
         self.assertEqual(version.returncode, 0)
         payload = json.loads(version.stdout)
         self.assertEqual(payload["cli_contract_version"], "1.0.0")
-        self.assertEqual(payload["core_version"], "1.3.0")
+        self.assertEqual(payload["core_version"], __version__)
         self.assertEqual(payload["exit_code"], 0)
         invalid = self.run_cli("validate-package", "missing.zip")
         self.assertEqual(invalid.returncode, 1)

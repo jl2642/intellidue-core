@@ -1,0 +1,85 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'core-v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing-style release tag used for a dry-run build
+        required: true
+        default: core-v1.4.0
+      publish:
+        description: Publishing is allowed only for an actual pushed tag
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: build, attest and release
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install build and validation tools
+        run: python -m pip install --upgrade pip build twine
+      - name: Install package and run tests
+        run: |
+          python -m pip install -e .
+          python -m unittest discover -s tests -v
+      - name: Validate release policy and version
+        run: python scripts/release_gate.py --tag "$RELEASE_TAG" --output release-metadata.json --commit "$GITHUB_SHA"
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Validate distribution metadata
+        run: python -m twine check dist/*
+      - name: Assemble checksummed release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir release-assets
+          cp dist/* release-assets/
+          cp release-metadata.json release-assets/
+          (cd release-assets && sha256sum intellidue_core-* release-metadata.json | sort -k2 > SHA256SUMS)
+          (cd release-assets && sha256sum -c SHA256SUMS)
+      - name: Upload release candidate artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: intellidue-core-${{ env.RELEASE_TAG }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Generate build provenance attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: release-assets/*
+      - name: Publish GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/core-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release create "$RELEASE_TAG" release-assets/* --verify-tag --generate-notes --title "$RELEASE_TAG"
+      - name: Reject workflow-dispatch publish request
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        shell: bash
+        run: |
+          echo 'Publishing requires an existing pushed core-vX.Y.Z tag.' >&2
+          exit 1

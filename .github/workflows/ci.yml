@@ -2,20 +2,65 @@ name: ci
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
+    name: test / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
+          cache: pip
       - name: Install package
         run: python -m pip install -e .
       - name: Unit tests
         run: python -m unittest discover -s tests -v
+      - name: Compile package
+        run: python -m compileall -q src tests scripts
+
+  security-regressions:
+    name: security regressions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install package
+        run: python -m pip install -e .
+      - name: Archive and release security negative tests
+        run: python -m unittest discover -s tests -p 'test_security*.py' -v
+      - name: Repository hygiene
+        run: python scripts/check_repo_hygiene.py
+
+  contract-smoke:
+    name: contract and package smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install package
+        run: python -m pip install -e .
       - name: Validate synthetic state
         run: intellidue validate-state tests/fixtures/synthetic_project/current_project_state.json
       - name: Validate synthetic release lock
@@ -53,5 +98,69 @@ jobs:
           intellidue promote --workspace "$tmp/runtime" --candidate "$tmp/candidate-v2" --release-id v2 --expected-current v1 --transaction-id tx2 --timestamp 2026-07-23T00:00:02Z
           intellidue rollback --workspace "$tmp/runtime" --release-id v1 --reason regression --expected-current v2 --transaction-id tx3 --timestamp 2026-07-23T00:00:03Z
           intellidue validate-workspace "$tmp/runtime"
-      - name: Public repository hygiene
-        run: python scripts/check_repo_hygiene.py
+
+  build:
+    name: build distribution
+    needs: [test, security-regressions, contract-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Build tools
+        run: python -m pip install --upgrade pip build twine
+      - name: Validate release policy snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'import pathlib,re; text=pathlib.Path("src/intellidue_core/__init__.py").read_text(); print(re.search(r"__version__\s*=\s*[\"\x27]([^\"\x27]+)[\"\x27]", text).group(1))')"
+          python scripts/release_gate.py --tag "core-v${version}" --output release-metadata.json --commit "$GITHUB_SHA"
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+      - name: Generate and verify checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum dist/* release-metadata.json | sort -k2 > SHA256SUMS
+          sha256sum -c SHA256SUMS
+      - name: Install built wheel in clean environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/intellidue-smoke"
+          "$RUNNER_TEMP/intellidue-smoke/bin/python" -m pip install dist/*.whl
+          "$RUNNER_TEMP/intellidue-smoke/bin/intellidue" version
+      - name: Upload reproducible build candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: intellidue-core-${{ github.sha }}
+          path: |
+            dist/*
+            release-metadata.json
+            SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+  required:
+    name: required
+    if: always()
+    needs: [test, security-regressions, contract-smoke, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required jobs
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+          SECURITY_RESULT: ${{ needs.security-regressions.result }}
+          CONTRACT_RESULT: ${{ needs.contract-smoke.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$TEST_RESULT" = success
+          test "$SECURITY_RESULT" = success
+          test "$CONTRACT_RESULT" = success
+          test "$BUILD_RESULT" = success
