@@ -9,6 +9,18 @@ from .contracts import SCHEMA_VERSION, ValidationIssue
 from .manifest import save_manifest, verify_manifest_file
 from .package_format import PackageLimits, build_release_package, extract_release_package, inspect_package
 from .promotion import PromotionError, promote_release, recover_workspace, rollback_release, validate_workspace
+from .private_runtime import (
+    ADAPTER_CONTRACT_VERSION,
+    PrivateRuntimeError,
+    build_private_release_package,
+    inspect_private_project,
+    inspect_private_runtime,
+    promote_private_release,
+    recover_private_runtime,
+    rollback_private_release,
+    validate_private_project,
+    validate_private_runtime,
+)
 from .validators import validate_archive, validate_contract_files, validate_manifest, validate_package_validation, validate_pointer, validate_release_lock, validate_state
 
 CLI_CONTRACT_VERSION = "1.0.0"
@@ -53,7 +65,7 @@ def _emit(command: str, issues=(), *, exit_code: int | None = None, **extra) -> 
 def _execute(command: str, operation: Callable[[], object]) -> int:
     try:
         result = operation()
-    except PromotionError as exc:
+    except (PromotionError, PrivateRuntimeError) as exc:
         return _emit(command, [exc.issue], exit_code=EXIT_OPERATION_FAILED)
     except FileExistsError as exc:
         return _emit(command, [ValidationIssue("DESTINATION_EXISTS", "$", str(exc))], exit_code=EXIT_OPERATION_FAILED)
@@ -135,6 +147,39 @@ def build_parser() -> argparse.ArgumentParser:
     command.add_argument("--destination", required=True)
     command.add_argument("--overwrite", action="store_true")
     _add_package_options(command)
+    command = sub.add_parser("inspect-private-project")
+    command.add_argument("--project-root", required=True)
+    command.add_argument("--config", default="adapter.json")
+    command = sub.add_parser("validate-private-project")
+    command.add_argument("--project-root", required=True)
+    command.add_argument("--config", default="adapter.json")
+    command = sub.add_parser("build-private-release")
+    command.add_argument("--project-root", required=True)
+    command.add_argument("--output", required=True)
+    command.add_argument("--config", default="adapter.json")
+    command.add_argument("--timestamp")
+    command.add_argument("--overwrite", action="store_true")
+    command = sub.add_parser("promote-private-release")
+    command.add_argument("--project-root", required=True)
+    command.add_argument("--runtime", required=True)
+    command.add_argument("--config", default="adapter.json")
+    command.add_argument("--expected-current")
+    command.add_argument("--transaction-id")
+    command.add_argument("--timestamp")
+    command = sub.add_parser("inspect-private-runtime")
+    command.add_argument("--runtime", required=True)
+    command = sub.add_parser("validate-private-runtime")
+    command.add_argument("--runtime", required=True)
+    command = sub.add_parser("rollback-private-release")
+    command.add_argument("--runtime", required=True)
+    command.add_argument("--release-id", required=True)
+    command.add_argument("--reason", required=True)
+    command.add_argument("--expected-current")
+    command.add_argument("--transaction-id")
+    command.add_argument("--timestamp")
+    command = sub.add_parser("recover-private-runtime")
+    command.add_argument("--runtime", required=True)
+    command.add_argument("--force-lock", action="store_true")
     command = sub.add_parser("validate-workspace")
     command.add_argument("workspace")
     command = sub.add_parser("promote")
@@ -160,7 +205,7 @@ def build_parser() -> argparse.ArgumentParser:
 def _dispatch(args) -> int:
     command = args.cmd
     if command == "version":
-        return _emit(command, version={"core": __version__, "schema_contract": SCHEMA_VERSION, "cli_contract": CLI_CONTRACT_VERSION, "package_format": PACKAGE_FORMAT_VERSION})
+        return _emit(command, version={"core": __version__, "schema_contract": SCHEMA_VERSION, "cli_contract": CLI_CONTRACT_VERSION, "package_format": PACKAGE_FORMAT_VERSION, "private_runtime_adapter": ADAPTER_CONTRACT_VERSION})
     if command == "validate-state": return _emit(command, validate_state(args.path))
     if command == "validate-lock": return _emit(command, validate_release_lock(args.path))
     if command == "validate-validation": return _emit(command, validate_package_validation(args.path))
@@ -172,6 +217,18 @@ def _dispatch(args) -> int:
         return _emit(command, issues, inspection=inspection.to_dict())
     if command == "validate-contract": return _emit(command, validate_contract_files(args.state, args.lock, args.validation))
     if command == "verify-manifest": return _emit(command, verify_manifest_file(args.root, args.manifest))
+    if command == "inspect-private-project":
+        inspection, issues = inspect_private_project(args.project_root, args.config)
+        return _emit(command, issues, inspection=inspection)
+    if command == "validate-private-project": return _emit(command, validate_private_project(args.project_root, args.config))
+    if command == "build-private-release": return _execute(command, lambda: build_private_release_package(args.project_root, args.output, config=args.config, timestamp=args.timestamp, overwrite=args.overwrite))
+    if command == "promote-private-release": return _execute(command, lambda: promote_private_release(args.project_root, args.runtime, config=args.config, expected_current=args.expected_current, transaction_id=args.transaction_id, timestamp=args.timestamp))
+    if command == "inspect-private-runtime":
+        inspection, issues = inspect_private_runtime(args.runtime)
+        return _emit(command, issues, inspection=inspection)
+    if command == "validate-private-runtime": return _emit(command, validate_private_runtime(args.runtime))
+    if command == "rollback-private-release": return _execute(command, lambda: rollback_private_release(args.runtime, args.release_id, args.reason, expected_current=args.expected_current, transaction_id=args.transaction_id, timestamp=args.timestamp))
+    if command == "recover-private-runtime": return _execute(command, lambda: recover_private_runtime(args.runtime, force_lock=args.force_lock))
     if command == "validate-workspace": return _emit(command, validate_workspace(args.workspace))
     if command == "build-manifest": return _execute(command, lambda: {"output": args.output, "manifest": save_manifest(args.root, args.output, root_name=args.root_name)})
     if command == "build-package": return _execute(command, lambda: build_release_package(args.source, args.output, package_id=args.package_id, release_id=args.release_id, timestamp=args.timestamp, overwrite=args.overwrite))
