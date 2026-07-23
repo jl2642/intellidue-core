@@ -26,5 +26,18 @@ jobs:
         run: intellidue validate-contract --state tests/fixtures/synthetic_project/current_project_state.json --lock tests/fixtures/synthetic_project/release_lock.json --validation tests/fixtures/synthetic_project/package_validation.json
       - name: Validate synthetic package
         run: intellidue validate-package tests/fixtures/synthetic_project/package.zip
+      - name: Promotion engine smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          mkdir -p "$tmp/candidate-v1" "$tmp/candidate-v2"
+          printf 'one\n' > "$tmp/candidate-v1/payload.txt"
+          printf 'two\n' > "$tmp/candidate-v2/payload.txt"
+          intellidue promote --workspace "$tmp/runtime" --candidate "$tmp/candidate-v1" --release-id v1 --transaction-id tx1 --timestamp 2026-07-23T00:00:01Z
+          intellidue validate-workspace "$tmp/runtime"
+          intellidue promote --workspace "$tmp/runtime" --candidate "$tmp/candidate-v2" --release-id v2 --expected-current v1 --transaction-id tx2 --timestamp 2026-07-23T00:00:02Z
+          intellidue rollback --workspace "$tmp/runtime" --release-id v1 --reason regression --expected-current v2 --transaction-id tx3 --timestamp 2026-07-23T00:00:03Z
+          intellidue validate-workspace "$tmp/runtime"
       - name: Public repository hygiene
         run: python scripts/check_repo_hygiene.py
