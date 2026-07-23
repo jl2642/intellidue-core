@@ -25,11 +25,12 @@ Schema contract version: `v1.0.0`
 CLI contract version: `v1.0.0`  
 Release package format: `v1.0.0`  
 Private-project replay: `PASS_FOR_GITHUB5_FINAL`  
-Operational release: `GITHUB_FINAL_IN_PROGRESS`
+Repository platform controls: `PASS_PLATFORM_CONTROLS`  
+Operational release: `READY_FOR_CORE_V1.5.0_TAG`
 
 The complete authoritative private-project baseline has passed deterministic build, two-release promotion, Current/Last-success/Archive reconciliation, rollback, crash recovery, cross-project contamination rejection and tamper detection without exporting private project content to GitHub.
 
-GitHub-Final remains gated by repository-owner platform settings, Issue #2 closure, immutable tag creation and final release-asset verification. See `docs/github-final-checklist.md`.
+GitHub-Final source-controlled governance and platform controls are accepted. Remaining completion gates are protected merge to `main`, immutable `core-v1.5.0` tag creation, release-asset/checksum/provenance verification and final anonymized Release Lock. See `docs/github-final-checklist.md`.
 
 ## Operating model
 
@@ -98,7 +99,7 @@ The runtime is permanently bound to one `project_id`, stores immutable private r
 
 Pull requests are tested across supported Python versions and are subject to package-security regression checks, dependency review and CodeQL analysis. Tag-driven release automation builds wheel and source distributions, verifies checksums and package metadata, creates provenance attestations and publishes a GitHub Release only for an existing `core-vX.Y.Z` tag.
 
-Repository-level administrative controls are tracked separately because they cannot be represented completely in source files. See `docs/repository-settings.md` and repository issue #2.
+Repository-level administrative controls are accepted for GitHub-Final and recorded in `docs/acceptance/github-final-platform-controls-20260723.md` and repository issue #2.
 
 ## Licensing
 
