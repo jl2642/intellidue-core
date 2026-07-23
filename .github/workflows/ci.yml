@@ -24,8 +24,22 @@ jobs:
         run: intellidue validate-validation tests/fixtures/synthetic_project/package_validation.json
       - name: Validate synthetic contract
         run: intellidue validate-contract --state tests/fixtures/synthetic_project/current_project_state.json --lock tests/fixtures/synthetic_project/release_lock.json --validation tests/fixtures/synthetic_project/package_validation.json
-      - name: Validate synthetic package
+      - name: Validate legacy synthetic package
         run: intellidue validate-package tests/fixtures/synthetic_project/package.zip
+      - name: Release package lifecycle smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          mkdir -p "$tmp/source/nested"
+          printf 'one\n' > "$tmp/source/payload.txt"
+          printf 'two\n' > "$tmp/source/nested/second.txt"
+          intellidue build-package --source "$tmp/source" --output "$tmp/release.zip" --package-id release-v1 --release-id v1 --timestamp 2026-07-23T00:00:00Z
+          intellidue inspect-package "$tmp/release.zip" --profile release
+          intellidue validate-package "$tmp/release.zip" --profile release
+          intellidue extract-package --package "$tmp/release.zip" --destination "$tmp/extracted"
+          cmp "$tmp/source/payload.txt" "$tmp/extracted/release-v1/payload/payload.txt"
+          cmp "$tmp/source/nested/second.txt" "$tmp/extracted/release-v1/payload/nested/second.txt"
       - name: Promotion engine smoke
         shell: bash
         run: |

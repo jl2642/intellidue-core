@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/package_descriptor.schema.json",
+  "title": "PackageDescriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_format_version",
+    "package_id",
+    "release_id",
+    "package_class",
+    "created_at",
+    "payload_path",
+    "manifest_path"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "package_format_version": {"const": "1.0.0"},
+    "package_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "release_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "package_class": {"const": "PRODUCT_RELEASE"},
+    "created_at": {"type": "string", "minLength": 1, "maxLength": 64},
+    "payload_path": {"const": "payload"},
+    "manifest_path": {"const": "manifest.json"}
+  }
+}

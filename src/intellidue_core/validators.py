@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-import zipfile
 
 from .contracts import ValidationIssue, validate_contract_files, validate_document
 from .manifest import verify_manifest_file
@@ -42,25 +41,8 @@ def validate_archive(path: str | Path) -> list[ValidationIssue]:
 
 
 def validate_zip(path: str | Path) -> list[ValidationIssue]:
-    path = Path(path)
-    if not path.exists():
-        return [ValidationIssue("FILE_NOT_FOUND", "$", f"file not found: {path}")]
-    issues: list[ValidationIssue] = []
-    try:
-        with zipfile.ZipFile(path) as archive:
-            bad = archive.testzip()
-            if bad:
-                issues.append(ValidationIssue("PACKAGE_CORRUPT", "$", f"corrupt member: {bad}"))
-            names = archive.namelist()
-            roots = {name.split("/", 1)[0] for name in names if name}
-            if len(roots) != 1:
-                issues.append(ValidationIssue("PACKAGE_NOT_SINGLE_ROOT", "$", "ZIP must contain exactly one root"))
-            for name in names:
-                if name.startswith("/") or ".." in Path(name).parts:
-                    issues.append(ValidationIssue("PACKAGE_UNSAFE_PATH", "$", f"unsafe ZIP path: {name}"))
-    except zipfile.BadZipFile as exc:
-        issues.append(ValidationIssue("PACKAGE_INVALID_ZIP", "$", str(exc)))
-    return sorted(set(issues))
+    from .package_format import validate_package
+    return validate_package(path, profile="archive")
 
 
 __all__ = [
