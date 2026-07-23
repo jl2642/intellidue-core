@@ -5,6 +5,8 @@ from pathlib import Path
 import zipfile
 
 from .contracts import ValidationIssue, validate_contract_files, validate_document
+from .manifest import verify_manifest_file
+from .promotion import validate_workspace
 
 
 def sha256(path: str | Path) -> str:
@@ -31,6 +33,14 @@ def validate_manifest(path: str | Path) -> list[ValidationIssue]:
     return validate_document("manifest", path)
 
 
+def validate_pointer(path: str | Path) -> list[ValidationIssue]:
+    return validate_document("pointer", path)
+
+
+def validate_archive(path: str | Path) -> list[ValidationIssue]:
+    return validate_document("archive", path)
+
+
 def validate_zip(path: str | Path) -> list[ValidationIssue]:
     path = Path(path)
     if not path.exists():
@@ -54,12 +64,8 @@ def validate_zip(path: str | Path) -> list[ValidationIssue]:
 
 
 __all__ = [
-    "ValidationIssue",
-    "sha256",
-    "validate_state",
-    "validate_release_lock",
-    "validate_package_validation",
-    "validate_manifest",
-    "validate_contract_files",
-    "validate_zip",
+    "ValidationIssue", "sha256", "validate_state", "validate_release_lock",
+    "validate_package_validation", "validate_manifest", "validate_pointer",
+    "validate_archive", "validate_contract_files", "validate_zip",
+    "verify_manifest_file", "validate_workspace",
 ]

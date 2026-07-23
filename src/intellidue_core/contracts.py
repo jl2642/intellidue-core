@@ -15,6 +15,8 @@ SCHEMA_FILES = {
     "lock": "release_lock.schema.json",
     "validation": "package_validation.schema.json",
     "manifest": "product_manifest.schema.json",
+    "pointer": "promotion_pointer.schema.json",
+    "archive": "archive_index.schema.json",
 }
 
 
@@ -80,13 +82,7 @@ def validate_object(kind: str, obj: dict[str, Any]) -> list[ValidationIssue]:
 
     validator = Draft202012Validator(schema_for(kind))
     for error in sorted(validator.iter_errors(obj), key=lambda item: (list(item.absolute_path), item.message)):
-        issues.append(
-            ValidationIssue(
-                "SCHEMA_VIOLATION",
-                _json_path(error.absolute_path),
-                error.message,
-            )
-        )
+        issues.append(ValidationIssue("SCHEMA_VIOLATION", _json_path(error.absolute_path), error.message))
 
     if not issues and kind in {"state", "lock", "validation"}:
         boundary_key = {"state": "project_boundaries", "lock": "hard_controls", "validation": "non_regression"}[kind]
@@ -102,6 +98,15 @@ def validate_object(kind: str, obj: dict[str, Any]) -> list[ValidationIssue]:
             issues.append(ValidationIssue("MANIFEST_DUPLICATE_PATH", "$.files", "manifest paths must be unique"))
         if paths != sorted(paths):
             issues.append(ValidationIssue("MANIFEST_PATH_ORDER", "$.files", "manifest paths must be sorted"))
+
+    if kind == "archive" and not issues:
+        release_ids = [item["release_id"] for item in obj["entries"]]
+        if len(release_ids) != len(set(release_ids)):
+            issues.append(ValidationIssue("ARCHIVE_DUPLICATE_RELEASE", "$.entries", "archive release_id values must be unique"))
+        ordering = [(item["archived_at"], item["release_id"]) for item in obj["entries"]]
+        if ordering != sorted(ordering):
+            issues.append(ValidationIssue("ARCHIVE_ORDER", "$.entries", "archive entries must be sorted by archived_at and release_id"))
+
     return sorted(set(issues))
 
 
@@ -112,11 +117,7 @@ def validate_document(kind: str, path: str | Path) -> list[ValidationIssue]:
     return validate_object(kind, obj)
 
 
-def validate_contract_objects(
-    state: dict[str, Any],
-    lock: dict[str, Any],
-    validation: dict[str, Any],
-) -> list[ValidationIssue]:
+def validate_contract_objects(state: dict[str, Any], lock: dict[str, Any], validation: dict[str, Any]) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     for kind, obj in (("state", state), ("lock", lock), ("validation", validation)):
         issues.extend(validate_object(kind, obj))
@@ -158,11 +159,7 @@ def validate_contract_objects(
     return sorted(set(issues))
 
 
-def validate_contract_files(
-    state_path: str | Path,
-    lock_path: str | Path,
-    validation_path: str | Path,
-) -> list[ValidationIssue]:
+def validate_contract_files(state_path: str | Path, lock_path: str | Path, validation_path: str | Path) -> list[ValidationIssue]:
     documents: list[dict[str, Any]] = []
     issues: list[ValidationIssue] = []
     for path in (state_path, lock_path, validation_path):
