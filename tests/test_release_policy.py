@@ -10,6 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/release_gate.py"
+sys.path.insert(0, str(ROOT / "src"))
+from intellidue_core import __version__
 
 
 class ReleasePolicyTests(unittest.TestCase):
@@ -17,21 +19,21 @@ class ReleasePolicyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             output = Path(tmp) / "release.json"
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "--tag", "core-v1.4.0", "--output", str(output), "--commit", "abc123"],
+                [sys.executable, str(SCRIPT), "--tag", f"core-v{__version__}", "--output", str(output), "--commit", "abc123"],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             metadata = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(metadata["core_version"], "1.4.0")
+            self.assertEqual(metadata["core_version"], __version__)
             self.assertEqual(metadata["license_posture"], "NO_LICENSE_ALL_RIGHTS_RESERVED")
             self.assertFalse(metadata["private_project_data_included"])
 
     def test_rejects_invalid_tag(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "--tag", "v1.4.0", "--output", str(Path(tmp) / "release.json")],
+                [sys.executable, str(SCRIPT), "--tag", "v1.5.0", "--output", str(Path(tmp) / "release.json")],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,
@@ -44,10 +46,10 @@ class ReleasePolicyTests(unittest.TestCase):
             project = Path(tmp) / "project"
             (project / "src/intellidue_core").mkdir(parents=True)
             shutil.copy2(ROOT / "NO_LICENSE.md", project / "NO_LICENSE.md")
-            (project / "pyproject.toml").write_text('[project]\nname="x"\nversion="1.4.1"\n', encoding="utf-8")
-            (project / "src/intellidue_core/__init__.py").write_text('__version__ = "1.4.0"\n', encoding="utf-8")
+            (project / "pyproject.toml").write_text('[project]\nname="x"\nversion="1.5.1"\n', encoding="utf-8")
+            (project / "src/intellidue_core/__init__.py").write_text('__version__ = "1.5.0"\n', encoding="utf-8")
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "--tag", "core-v1.4.1", "--output", str(project / "release.json"), "--project-root", str(project)],
+                [sys.executable, str(SCRIPT), "--tag", "core-v1.5.1", "--output", str(project / "release.json"), "--project-root", str(project)],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,
