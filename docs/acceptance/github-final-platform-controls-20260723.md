@@ -37,7 +37,13 @@ After the owner changes, repository metadata independently reported:
 
 A protected merge attempt previously reported all three required checks as `expected` despite successful workflow runs. The owner then removed and reselected the three checks from the current GitHub Actions identities, with `GitHub Actions` shown as the source for each check.
 
-This commit intentionally triggers a fresh PR validation set. GitHub-Final will accept the required-check binding only when the latest head receives successful CI, Dependency Review and CodeQL results and the protected squash merge recognizes them.
+To remove any ambiguity between workflow labels and check-run identities, the three blocking jobs now publish explicit stable check-run names matching the ruleset contexts exactly:
+
+- `ci / required`;
+- `dependency-review / dependency review`;
+- `codeql / analyze / python`.
+
+This documentation commit intentionally triggers a fresh PR validation set after those workflow-name changes. GitHub-Final will accept the binding only when the latest head receives successful CI, Dependency Review and CodeQL results and the protected squash merge recognizes them.
 
 ## Administrator and emergency posture
 
