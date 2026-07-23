@@ -5,9 +5,9 @@ Every JSON-producing command returns a stable envelope:
 ```json
 {
   "cli_contract_version": "1.0.0",
-  "core_version": "1.3.0",
+  "core_version": "1.5.0",
   "contract_version": "1.0.0",
-  "command": "validate-package",
+  "command": "validate-private-project",
   "ok": true,
   "exit_code": 0,
   "issues": []
@@ -24,11 +24,11 @@ Every JSON-producing command returns a stable envelope:
 | 3 | Operational failure, conflict or filesystem refusal |
 | 4 | Unexpected internal error |
 
-Argument errors are emitted as JSON with `CLI_USAGE_ERROR`. Existing commands remain available; GitHub-2C adds `version`, `inspect-package`, `build-package` and `extract-package`.
+Argument errors are emitted as JSON with `CLI_USAGE_ERROR`. Existing commands remain available. GitHub-4 adds `inspect-private-project`, `validate-private-project`, `build-private-release`, `promote-private-release`, `inspect-private-runtime`, `validate-private-runtime`, `rollback-private-release` and `recover-private-runtime`.
 
 ## Compatibility
 
-- Existing schema and promotion commands retain their names and accepted success behavior.
-- `validate-package <path>` remains compatible with the earlier structural ZIP check through the default `auto` profile.
-- `--profile release` requires the strict IntelliDue release-package envelope.
-- Existing issue codes are not silently redefined within CLI contract version 1.0.0.
+- Existing schema, package and promotion commands retain their names and accepted success behavior.
+- `validate-package <path>` preserves the `auto` profile and strict `release` profile.
+- Private-runtime commands use the same JSON envelope and exit-code meanings.
+- Existing issue codes are not silently redefined within CLI contract version `1.0.0`.
