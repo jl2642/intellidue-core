@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "adapter_contract_version": "1.0.0",
+  "project_id": "SYNTHETIC_PRIVATE_001",
+  "release_id": "private-v1",
+  "control": {
+    "state": "control/current_project_state.json",
+    "lock": "control/release_lock.json",
+    "validation": "control/package_validation.json"
+  },
+  "product_roots": [
+    {
+      "class": "READER",
+      "path": "products/reader",
+      "required": true
+    },
+    {
+      "class": "CONTROL",
+      "path": "products/control",
+      "required": true
+    },
+    {
+      "class": "SUPPLEMENTAL",
+      "path": "products/supplemental",
+      "required": false
+    }
+  ],
+  "privacy": {
+    "private_runtime_only": true,
+    "public_export_allowed": false,
+    "allow_external_paths": false,
+    "allow_symlinks": false
+  }
+}
