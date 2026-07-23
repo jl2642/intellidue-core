@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/private_runtime_receipt.schema.json",
+  "title": "PrivateRuntimeReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "adapter_contract_version",
+    "receipt_class",
+    "project_id",
+    "project_name",
+    "release_id",
+    "accepted_product_class",
+    "project_boundaries",
+    "control_sha256",
+    "product_summary",
+    "created_at",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "adapter_contract_version": {"const": "1.0.0"},
+    "receipt_class": {"const": "PRIVATE_PROJECT_RELEASE"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "project_name": {"type": "string", "minLength": 1, "maxLength": 200},
+    "release_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "accepted_product_class": {"enum": ["PRELIMINARY_RED_FLAG_DD", "FINAL_FULL_DD"]},
+    "project_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critical_gates_open", "restricted_outputs", "decision_ready"],
+      "properties": {
+        "critical_gates_open": {"type": "integer", "minimum": 0},
+        "restricted_outputs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1},
+          "maxItems": 100
+        },
+        "decision_ready": {"type": "boolean"}
+      }
+    },
+    "control_sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "lock", "validation"],
+      "properties": {
+        "state": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "lock": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "validation": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "product_summary": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["class", "path", "file_count", "total_bytes"],
+        "properties": {
+          "class": {"enum": ["READER", "CONTROL", "SUPPLEMENTAL"]},
+          "path": {"type": "string", "pattern": "^products/(reader|control|supplemental)$"},
+          "file_count": {"type": "integer", "minimum": 0},
+          "total_bytes": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "created_at": {"type": "string", "minLength": 1, "maxLength": 64},
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["private_runtime_only", "public_export_allowed", "network_write_performed"],
+      "properties": {
+        "private_runtime_only": {"const": true},
+        "public_export_allowed": {"const": false},
+        "network_write_performed": {"const": false}
+      }
+    }
+  }
+}
