@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   analyze:
-    name: analyze / python
+    name: codeql / analyze / python
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
