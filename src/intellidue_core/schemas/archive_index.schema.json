@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/archive_index.schema.json",
+  "title": "ArchiveIndex",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "release_id",
+          "release_path",
+          "manifest_path",
+          "manifest_sha256",
+          "archived_at",
+          "reason",
+          "transaction_id"
+        ],
+        "properties": {
+          "release_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          },
+          "release_path": {
+            "type": "string",
+            "pattern": "^releases/[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          },
+          "manifest_path": {
+            "type": "string",
+            "pattern": "^manifests/[A-Za-z0-9][A-Za-z0-9._-]{0,127}\\.manifest\\.json$"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "archived_at": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "transaction_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          }
+        }
+      }
+    }
+  }
+}

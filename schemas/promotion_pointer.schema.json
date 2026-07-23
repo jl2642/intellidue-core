@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/promotion_pointer.schema.json",
+  "title": "PromotionPointer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pointer_type",
+    "release_id",
+    "release_path",
+    "manifest_path",
+    "manifest_sha256",
+    "promoted_at",
+    "transaction_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "pointer_type": {
+      "enum": [
+        "CURRENT",
+        "LAST_SUCCESS"
+      ]
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "release_path": {
+      "type": "string",
+      "pattern": "^releases/[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "manifest_path": {
+      "type": "string",
+      "pattern": "^manifests/[A-Za-z0-9][A-Za-z0-9._-]{0,127}\\.manifest\\.json$"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "promoted_at": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "transaction_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    }
+  }
+}
