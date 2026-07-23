@@ -1,0 +1,26 @@
+{
+  "candidate_clean_install": "PASS",
+  "checksums": {
+    "intellidue_core-1.5.0-py3-none-any.whl": "2f99715a6bb6810c1af0c260f6f9794a54d7728fc24e3b51aca39dfb07e351ef",
+    "intellidue_core-1.5.0.tar.gz": "091841a5a43626302f3e27d1a3951ccf0059c8248ea0459b496010108906b009",
+    "release-metadata.json": "b9d80bd04160ebbf70f7aba51bd43535528b13855bb5f9f494062f600aec333f"
+  },
+  "distribution_metadata": "PASS",
+  "private_project_content_exported": false,
+  "provenance_attestation": "PASS",
+  "published_asset_checksum_verification": "PASS",
+  "published_wheel_clean_install": "PASS",
+  "release": {
+    "isDraft": false,
+    "isPrerelease": false,
+    "publishedAt": "2026-07-23T08:49:36Z",
+    "tagName": "core-v1.5.0",
+    "url": "https://github.com/jl2642/intellidue-core/releases/tag/core-v1.5.0"
+  },
+  "release_tag": "core-v1.5.0",
+  "repository_hygiene": "PASS",
+  "source_tests": "PASS",
+  "status": "PASS_RELEASE_BOOTSTRAP",
+  "target_commit": "012ffbbe0271712408caeae93cd9b6e72fe0ee76",
+  "workflow_run_id": "29992492989"
+}
