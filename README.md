@@ -14,13 +14,15 @@ This repository intentionally contains no real project data or reports.
 
 ## Status
 Production product standard: `v1.0.0`  
-Public-core bootstrap patch: `v1.0.1`
+Public-core contract-hardening version: `v1.1.0`
 
 ## Quick check
 ```bash
 python -m unittest discover -s tests -v
 intellidue validate-state tests/fixtures/synthetic_project/current_project_state.json
 intellidue validate-package tests/fixtures/synthetic_project/package.zip
+intellidue validate-validation tests/fixtures/synthetic_project/package_validation.json
+intellidue validate-contract --state tests/fixtures/synthetic_project/current_project_state.json --lock tests/fixtures/synthetic_project/release_lock.json --validation tests/fixtures/synthetic_project/package_validation.json
 ```
 
 ## Product boundary

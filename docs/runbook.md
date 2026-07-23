@@ -20,3 +20,17 @@
 
 ## C. Formal issue
 Named product owner and relevant finance, engineering/HSE and legal reviewers must sign the applicable products. AI generation and system QA do not replace professional reliance.
+
+## Contract validation
+
+```bash
+intellidue validate-state current_project_state.json
+intellidue validate-lock release_lock.json
+intellidue validate-validation package_validation.json
+intellidue validate-contract \
+  --state current_project_state.json \
+  --lock release_lock.json \
+  --validation package_validation.json
+```
+
+A non-zero exit code means at least one typed validation issue was returned. Do not promote or publish a package when any contract issue remains.

@@ -20,6 +20,10 @@ jobs:
         run: intellidue validate-state tests/fixtures/synthetic_project/current_project_state.json
       - name: Validate synthetic release lock
         run: intellidue validate-lock tests/fixtures/synthetic_project/release_lock.json
+      - name: Validate synthetic package validation
+        run: intellidue validate-validation tests/fixtures/synthetic_project/package_validation.json
+      - name: Validate synthetic contract
+        run: intellidue validate-contract --state tests/fixtures/synthetic_project/current_project_state.json --lock tests/fixtures/synthetic_project/release_lock.json --validation tests/fixtures/synthetic_project/package_validation.json
       - name: Validate synthetic package
         run: intellidue validate-package tests/fixtures/synthetic_project/package.zip
       - name: Public repository hygiene

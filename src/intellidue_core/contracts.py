@@ -88,6 +88,14 @@ def validate_object(kind: str, obj: dict[str, Any]) -> list[ValidationIssue]:
             )
         )
 
+    if not issues and kind in {"state", "lock", "validation"}:
+        boundary_key = {"state": "project_boundaries", "lock": "hard_controls", "validation": "non_regression"}[kind]
+        boundaries = obj[boundary_key]
+        if boundaries["decision_ready"] and boundaries["critical_gates_open"] != 0:
+            issues.append(ValidationIssue("DECISION_READY_OPEN_GATES", f"$.{boundary_key}.critical_gates_open", "decision_ready=true requires zero open critical gates"))
+        if boundaries["decision_ready"] and boundaries["restricted_outputs"]:
+            issues.append(ValidationIssue("DECISION_READY_RESTRICTED_OUTPUTS", f"$.{boundary_key}.restricted_outputs", "decision_ready=true requires no restricted outputs"))
+
     if kind == "manifest" and not issues:
         paths = [item["path"] for item in obj["files"]]
         if len(paths) != len(set(paths)):
@@ -112,11 +120,14 @@ def validate_contract_objects(
     issues: list[ValidationIssue] = []
     for kind, obj in (("state", state), ("lock", lock), ("validation", validation)):
         issues.extend(validate_object(kind, obj))
-    if issues:
+    structural_codes = {"SCHEMA_VERSION_MISSING", "SCHEMA_VERSION_UNSUPPORTED", "SCHEMA_VIOLATION"}
+    if any(issue.code in structural_codes for issue in issues):
         return sorted(set(issues))
 
     if state["project_id"] != lock["project_id"] or state["project_id"] != validation["project_id"]:
         issues.append(ValidationIssue("CONTRACT_PROJECT_ID_MISMATCH", "$", "project_id must match across state, lock and validation"))
+    if state["status"] != lock["status"]:
+        issues.append(ValidationIssue("CONTRACT_STATUS_MISMATCH", "$", "status must match between state and lock"))
     if state["accepted_product_class"] != lock["accepted_product_class"]:
         issues.append(ValidationIssue("CONTRACT_PRODUCT_CLASS_MISMATCH", "$", "accepted_product_class must match between state and lock"))
     if state["next"] != lock["next"]:
