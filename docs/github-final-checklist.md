@@ -1,6 +1,6 @@
 # GitHub-Final Operational Release Checklist
 
-Status: `READY_FOR_IMMUTABLE_RELEASE`
+Status: `READY_FOR_FINAL_PR_VALIDATION`
 
 ## A. Accepted prerequisites
 
@@ -53,10 +53,11 @@ Independent repository metadata confirms merge commits disabled, rebase merges d
 
 ## D. Final source-controlled closure
 
-- [x] Update Issue #2 with evidence and authorize closure.
+- [x] Update Issue #2 with evidence and close it as completed.
 - [x] Update README and Current state to the immutable-release gate.
 - [x] Freeze the operating model, new-project runbook, privacy assurance and private-file retention rules.
-- [x] Run final unit, compatibility, package, privacy, security and reproducible-build checks on the GitHub-Final PR head.
+- [x] Mark PR #10 ready for review under the protected `main` workflow.
+- [ ] Run final unit, compatibility, package, privacy, security and reproducible-build checks on the latest GitHub-Final PR head.
 - [ ] Merge the GitHub-Final PR through the protected `main` workflow.
 - [ ] Verify the release tag exactly matches package version: `core-v1.5.0`.
 - [ ] Push the immutable tag and allow the release workflow to create checksummed assets and provenance.
