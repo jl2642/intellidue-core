@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "SYNTHETIC_PRIVATE_001",
+  "release": "SYNTHETIC_PRIVATE_RELEASE_V1",
+  "status": "CURRENT",
+  "release_class": "PRELIMINARY_RED_FLAG_PRIVATE",
+  "accepted_product_class": "PRELIMINARY_RED_FLAG_DD",
+  "hard_controls": {
+    "critical_gates_open": 2,
+    "restricted_outputs": [
+      "Final valuation"
+    ],
+    "decision_ready": false
+  },
+  "next": "Evidence closure and conditional negotiation"
+}
