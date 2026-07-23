@@ -17,6 +17,7 @@ SCHEMA_FILES = {
     "manifest": "product_manifest.schema.json",
     "pointer": "promotion_pointer.schema.json",
     "archive": "archive_index.schema.json",
+    "package": "package_descriptor.schema.json",
 }
 
 
