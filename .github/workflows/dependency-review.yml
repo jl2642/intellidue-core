@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   review:
-    name: dependency review
+    name: dependency-review / dependency review
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
