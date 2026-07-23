@@ -1,6 +1,6 @@
 # GitHub-Final Platform Controls Acceptance — 2026-07-23
 
-Status: `PASS_PLATFORM_CONTROLS`
+Status: `CONDITIONAL_PASS_REQUIRED_CHECK_REBINDING`
 
 ## Evidence basis
 
@@ -11,7 +11,7 @@ The evidence confirms:
 - an active ruleset targets the default branch (`main`);
 - pull requests are required before merge;
 - conversation resolution is required;
-- required status checks are `ci / required`, `dependency-review / dependency review`, and `codeql / analyze / python`;
+- the intended required status checks are `ci / required`, `dependency-review / dependency review`, and `codeql / analyze / python`;
 - branches must be up to date before merge;
 - force pushes and branch deletion are blocked;
 - no routine bypass entry is configured;
@@ -33,7 +33,13 @@ After the owner changes, repository metadata independently reported:
 - `allow_squash_merge = true`;
 - `allow_update_branch = true`.
 
-PR #10 workflow runs for CI, Dependency Review and CodeQL all completed successfully.
+PR #10 produced two complete successful validation sets for CI, Dependency Review and CodeQL on its latest head.
+
+## Required-check binding defect
+
+Despite those successful runs, GitHub's protected merge endpoint reports all three required checks as `expected`. This proves that the ruleset is active, but its saved required-check identities are not currently matching the successful GitHub Actions checks.
+
+The three checks must be removed and reselected from the current PR #10 check identities, preferably with the GitHub Actions source explicitly selected where the interface offers a source choice. A protected merge attempt must then recognize the checks as successful.
 
 ## Administrator and emergency posture
 
@@ -41,4 +47,4 @@ The ruleset has no routine bypass entry. Emergency owner intervention, if ever r
 
 ## Decision
 
-Repository platform controls satisfy the GitHub-Final governance gate. Issue #2 may close. This acceptance does not authorize private project data, reports, identifiers, paths, hashes, cloud links or business facts to enter the public repository or its workflow artifacts.
+All platform-control areas except effective required-check binding are accepted. Issue #2 remains open, and GitHub-Final may not merge until the protected merge gate recognizes all three successful checks. This acceptance does not authorize private project data, reports, identifiers, paths, hashes, cloud links or business facts to enter the public repository or its workflow artifacts.
