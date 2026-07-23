@@ -1,0 +1,15 @@
+{
+  "system": "IntelliDue",
+  "project_id": "SYNTHETIC_PROJECT",
+  "project_name": "Synthetic Project",
+  "status": "CURRENT",
+  "accepted_product_class": "PRELIMINARY_RED_FLAG_DD",
+  "project_boundaries": {
+    "critical_gates_open": 1,
+    "restricted_outputs": [
+      "Final valuation"
+    ],
+    "decision_ready": false
+  },
+  "next": "Evidence closure"
+}

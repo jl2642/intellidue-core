@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReleaseLock",
+  "type": "object",
+  "required": [
+    "release",
+    "status",
+    "release_class",
+    "hard_controls",
+    "next"
+  ],
+  "properties": {
+    "release": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "release_class": {
+      "type": "string"
+    },
+    "hard_controls": {
+      "type": "object"
+    },
+    "next": {
+      "type": "string"
+    }
+  }
+}

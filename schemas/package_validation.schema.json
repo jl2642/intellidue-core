@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PackageValidation",
+  "type": "object",
+  "required": [
+    "status",
+    "tests",
+    "non_regression"
+  ],
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "tests": {
+      "type": "object"
+    },
+    "non_regression": {
+      "type": "object"
+    }
+  }
+}

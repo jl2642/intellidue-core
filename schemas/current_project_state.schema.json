@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CurrentProjectState",
+  "type": "object",
+  "required": [
+    "system",
+    "project_id",
+    "project_name",
+    "status",
+    "accepted_product_class",
+    "project_boundaries",
+    "next"
+  ],
+  "properties": {
+    "system": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "accepted_product_class": {
+      "type": "string"
+    },
+    "project_boundaries": {
+      "type": "object",
+      "required": [
+        "critical_gates_open",
+        "restricted_outputs",
+        "decision_ready"
+      ]
+    },
+    "next": {
+      "type": "string"
+    }
+  }
+}

@@ -1,2 +1,27 @@
-# intellidue-core
-Privacy-safe core for IntelliDue: schemas, workflows, validators, synthetic fixtures, and release automation. No real project data.
+# IntelliDue Core
+
+IntelliDue Core is a public, project-neutral control layer for producing preliminary and red-flag due-diligence products from heterogeneous project rooms.
+
+It defines:
+- source and evidence controls;
+- product-stack and quality-gate contracts;
+- deterministic manifests, pointers and package validation;
+- Reader/Control separation;
+- clean-room state recovery;
+- public/private data boundaries.
+
+This repository intentionally contains no real project data or reports.
+
+## Status
+Production product standard: `v1.0.0`  
+Public-core bootstrap patch: `v1.0.1`
+
+## Quick check
+```bash
+python -m unittest discover -s tests -v
+intellidue validate-state tests/fixtures/synthetic_project/current_project_state.json
+intellidue validate-package tests/fixtures/synthetic_project/package.zip
+```
+
+## Product boundary
+The core supports preliminary/red-flag due diligence. A Final Full DD product remains evidence- and professional-signoff-gated.

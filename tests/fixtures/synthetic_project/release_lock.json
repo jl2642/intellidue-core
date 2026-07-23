@@ -1,0 +1,9 @@
+{
+  "release": "SYNTHETIC_RELEASE",
+  "status": "CURRENT",
+  "release_class": "SYNTHETIC",
+  "hard_controls": {
+    "decision_ready": false
+  },
+  "next": "Evidence closure"
+}

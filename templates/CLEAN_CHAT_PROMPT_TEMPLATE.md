@@ -1,0 +1,1 @@
+Use only the uploaded release package. Recover project identity, product stack, source-use metrics, decision boundaries, human-signoff requirements and the next gate. Do not infer missing facts or upgrade the decision state.
