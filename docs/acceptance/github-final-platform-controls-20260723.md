@@ -1,6 +1,6 @@
 # GitHub-Final Platform Controls Acceptance — 2026-07-23
 
-Status: `CONDITIONAL_PASS_REQUIRED_CHECK_REBINDING`
+Status: `REVALIDATING_REQUIRED_CHECK_BINDING`
 
 ## Evidence basis
 
@@ -33,13 +33,11 @@ After the owner changes, repository metadata independently reported:
 - `allow_squash_merge = true`;
 - `allow_update_branch = true`.
 
-PR #10 produced two complete successful validation sets for CI, Dependency Review and CodeQL on its latest head.
+## Required-check binding revalidation
 
-## Required-check binding defect
+A protected merge attempt previously reported all three required checks as `expected` despite successful workflow runs. The owner then removed and reselected the three checks from the current GitHub Actions identities, with `GitHub Actions` shown as the source for each check.
 
-Despite those successful runs, GitHub's protected merge endpoint reports all three required checks as `expected`. This proves that the ruleset is active, but its saved required-check identities are not currently matching the successful GitHub Actions checks.
-
-The three checks must be removed and reselected from the current PR #10 check identities, preferably with the GitHub Actions source explicitly selected where the interface offers a source choice. A protected merge attempt must then recognize the checks as successful.
+This commit intentionally triggers a fresh PR validation set. GitHub-Final will accept the required-check binding only when the latest head receives successful CI, Dependency Review and CodeQL results and the protected squash merge recognizes them.
 
 ## Administrator and emergency posture
 
@@ -47,4 +45,4 @@ The ruleset has no routine bypass entry. Emergency owner intervention, if ever r
 
 ## Decision
 
-All platform-control areas except effective required-check binding are accepted. Issue #2 remains open, and GitHub-Final may not merge until the protected merge gate recognizes all three successful checks. This acceptance does not authorize private project data, reports, identifiers, paths, hashes, cloud links or business facts to enter the public repository or its workflow artifacts.
+The platform configuration is provisionally accepted and is undergoing final required-check binding revalidation. Issue #2 remains open until the protected merge gate recognizes all three successful checks. This acceptance does not authorize private project data, reports, identifiers, paths, hashes, cloud links or business facts to enter the public repository or its workflow artifacts.
