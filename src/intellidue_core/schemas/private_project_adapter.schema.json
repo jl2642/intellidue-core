@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/private_project_adapter.schema.json",
+  "title": "PrivateProjectAdapter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "adapter_contract_version",
+    "project_id",
+    "release_id",
+    "control",
+    "product_roots",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "adapter_contract_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "release_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "lock", "validation"],
+      "properties": {
+        "state": {"$ref": "#/$defs/relativePath"},
+        "lock": {"$ref": "#/$defs/relativePath"},
+        "validation": {"$ref": "#/$defs/relativePath"}
+      }
+    },
+    "product_roots": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["class", "path", "required"],
+        "properties": {
+          "class": {"enum": ["READER", "CONTROL", "SUPPLEMENTAL"]},
+          "path": {"$ref": "#/$defs/relativePath"},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "private_runtime_only",
+        "public_export_allowed",
+        "allow_external_paths",
+        "allow_symlinks"
+      ],
+      "properties": {
+        "private_runtime_only": {"const": true},
+        "public_export_allowed": {"const": false},
+        "allow_external_paths": {"const": false},
+        "allow_symlinks": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$)).+$"
+    }
+  }
+}
