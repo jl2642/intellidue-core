@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "intellidue-core"
-version = "1.4.0"
+version = "1.5.0"
 description = "Project-neutral due-diligence production controls"
 requires-python = ">=3.10"
 dependencies = ["jsonschema>=4.22,<5"]

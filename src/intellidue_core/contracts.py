@@ -18,6 +18,9 @@ SCHEMA_FILES = {
     "pointer": "promotion_pointer.schema.json",
     "archive": "archive_index.schema.json",
     "package": "package_descriptor.schema.json",
+    "private_adapter": "private_project_adapter.schema.json",
+    "private_binding": "private_runtime_binding.schema.json",
+    "private_receipt": "private_runtime_receipt.schema.json",
 }
 
 

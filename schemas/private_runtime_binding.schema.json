@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/private_runtime_binding.schema.json",
+  "title": "PrivateRuntimeBinding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "adapter_contract_version",
+    "runtime_class",
+    "project_id",
+    "created_at",
+    "core_workspace",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "adapter_contract_version": {"const": "1.0.0"},
+    "runtime_class": {"const": "PRIVATE_PROJECT_RUNTIME"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "created_at": {"type": "string", "minLength": 1, "maxLength": 64},
+    "core_workspace": {"const": "core"},
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["private_runtime_only", "public_export_allowed"],
+      "properties": {
+        "private_runtime_only": {"const": true},
+        "public_export_allowed": {"const": false}
+      }
+    }
+  }
+}

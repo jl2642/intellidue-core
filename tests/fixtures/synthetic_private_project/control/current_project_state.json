@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "system": "IntelliDue",
+  "project_id": "SYNTHETIC_PRIVATE_001",
+  "project_name": "Synthetic Private Project",
+  "status": "CURRENT",
+  "accepted_product_class": "PRELIMINARY_RED_FLAG_DD",
+  "project_boundaries": {
+    "critical_gates_open": 2,
+    "restricted_outputs": [
+      "Final valuation"
+    ],
+    "decision_ready": false
+  },
+  "next": "Evidence closure and conditional negotiation"
+}

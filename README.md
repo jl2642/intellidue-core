@@ -12,14 +12,15 @@ It defines:
 - Reader/Control separation;
 - clean-room state recovery;
 - public/private data boundaries;
-- CI, security scanning and reproducible release controls.
+- CI, security scanning and reproducible release controls;
+- an offline private-project runtime adapter with project binding and controlled promotion.
 
 This repository intentionally contains no real project data or reports.
 
 ## Status
 
 Production product standard: `v1.0.0`  
-Public-core CI/security/release version: `v1.4.0`  
+Public-core private-runtime-adapter version: `v1.5.0`  
 Schema contract version: `v1.0.0`  
 CLI contract version: `v1.0.0`  
 Release package format: `v1.0.0`
@@ -62,6 +63,23 @@ intellidue rollback --workspace ./runtime --release-id v1 --reason "regression" 
 ```
 
 The promotion engine writes immutable release directories, deterministic manifests, Current/Last-success pointers, an Archive index and transaction journals. Promotion failures restore the prior pointers and remove an unaccepted release. An unfinished journal requires `intellidue recover` before another writer may proceed.
+
+## Private project runtime
+
+The public core can operate against a local private project directory without copying private project data into this repository or performing network writes. A project-controlled `adapter.json` binds the project identity, three control contracts and Reader/Control product roots.
+
+```bash
+intellidue validate-private-project --project-root /private/project
+intellidue inspect-private-project --project-root /private/project
+intellidue build-private-release --project-root /private/project --output /private/releases/project-v1.zip
+intellidue promote-private-release --project-root /private/project --runtime /private/runtime
+intellidue validate-private-runtime --runtime /private/runtime
+intellidue inspect-private-runtime --runtime /private/runtime
+```
+
+The runtime is permanently bound to one `project_id`, stores immutable private releases under its own local `core/` workspace, reconciles control hashes and product receipts, and reuses the accepted Current/Archive/Last-success, rollback and recovery engine. The adapter packages existing controlled products; it does not perform due-diligence analysis or generate Reader content.
+
+GitHub-4 is validated only with synthetic fixtures. Real private-project replay remains a separate GitHub-5 acceptance step.
 
 ## Security and release governance
 
