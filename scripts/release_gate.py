@@ -6,17 +6,29 @@ import os
 from pathlib import Path
 import re
 import sys
-import tomllib
 
 TAG_PATTERN = re.compile(r"^core-v(?P<version>[0-9]+\.[0-9]+\.[0-9]+)$")
+PROJECT_BLOCK_PATTERN = re.compile(r"(?ms)^\[project\]\s*(.*?)(?=^\[|\Z)")
+VERSION_PATTERN = re.compile(r"(?m)^version\s*=\s*[\"']([^\"']+)[\"']\s*$")
+PACKAGE_VERSION_PATTERN = re.compile(r"__version__\s*=\s*[\"']([^\"']+)[\"']")
 PROHIBITED_LICENSE_FILES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING")
 
 
+def _read_project_version(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    project = PROJECT_BLOCK_PATTERN.search(text)
+    if not project:
+        raise ValueError("PROJECT_METADATA_MISSING: [project] section was not found")
+    version = VERSION_PATTERN.search(project.group(1))
+    if not version:
+        raise ValueError("PROJECT_VERSION_MISSING: [project].version was not found")
+    return version.group(1)
+
+
 def _read_versions(root: Path) -> tuple[str, str]:
-    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-    project_version = str(project["project"]["version"])
+    project_version = _read_project_version(root / "pyproject.toml")
     init_text = (root / "src/intellidue_core/__init__.py").read_text(encoding="utf-8")
-    match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', init_text)
+    match = PACKAGE_VERSION_PATTERN.search(init_text)
     if not match:
         raise ValueError("PACKAGE_VERSION_MISSING: __version__ was not found")
     return project_version, match.group(1)
@@ -60,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(args.project_root).resolve()
     try:
         metadata = build_release_metadata(root, args.tag, args.commit)
-    except (OSError, KeyError, ValueError, tomllib.TOMLDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, sort_keys=True))
         return 1
     output = Path(args.output)
