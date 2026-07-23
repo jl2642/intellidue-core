@@ -1,6 +1,6 @@
 # GitHub-Final Operational Release Checklist
 
-Status: `IN_PROGRESS_OWNER_PLATFORM_CONTROLS_REQUIRED`
+Status: `READY_FOR_IMMUTABLE_RELEASE`
 
 ## A. Accepted prerequisites
 
@@ -27,46 +27,45 @@ Status: `IN_PROGRESS_OWNER_PLATFORM_CONTROLS_REQUIRED`
 
 ## C. Repository-owner platform controls
 
-The repository owner must verify and evidence all items before Issue #2 may close:
+Accepted on 2026-07-23. Evidence is recorded in `docs/acceptance/github-final-platform-controls-20260723.md` and Issue #2.
 
-- [ ] Require a pull request before merging to `main`.
-- [ ] Require `ci / required`.
-- [ ] Require Dependency Review using its stable check name.
-- [ ] Require CodeQL Python analysis using its stable check name.
-- [ ] Require branches to be up to date before merge.
-- [ ] Require conversation resolution.
-- [ ] Block force pushes and deletion of `main`.
-- [ ] Apply the rule to administrators, or document a narrowly controlled emergency bypass.
-- [ ] Enable dependency graph.
-- [ ] Enable Dependabot alerts.
-- [ ] Enable Dependabot security updates.
-- [ ] Enable secret scanning.
-- [ ] Enable push protection.
-- [ ] Enable private vulnerability reporting.
-- [ ] Confirm CodeQL advanced setup is active.
-- [ ] Retain squash merge as the normal merge method.
-- [ ] Disable merge commits and rebase merge for normal work.
-- [ ] Enable automatic branch updates where available.
-- [ ] Record screenshots/exported evidence, date and account used in Issue #2.
+- [x] Require a pull request before merging to `main`.
+- [x] Require `ci / required`.
+- [x] Require Dependency Review using its stable check name.
+- [x] Require CodeQL Python analysis using its stable check name.
+- [x] Require branches to be up to date before merge.
+- [x] Require conversation resolution.
+- [x] Block force pushes and deletion of `main`.
+- [x] Apply the rule without routine bypass; emergency owner intervention must be documented and audited.
+- [x] Enable dependency graph.
+- [x] Enable Dependabot alerts.
+- [x] Enable Dependabot security updates.
+- [x] Enable secret scanning.
+- [x] Enable push protection.
+- [x] Enable private vulnerability reporting.
+- [x] Confirm CodeQL advanced setup is active.
+- [x] Retain squash merge as the normal merge method.
+- [x] Disable merge commits and rebase merge for normal work.
+- [x] Enable automatic branch updates where available.
+- [x] Record owner-view evidence, date and account basis in Issue #2 and the acceptance record.
 
-Current repository metadata shows squash, merge-commit and rebase methods are all enabled, and automatic branch updates are disabled. Therefore the merge-policy portion is not yet compliant.
+Independent repository metadata confirms merge commits disabled, rebase merges disabled, squash merge enabled and pull-request branch update suggestions enabled.
 
 ## D. Final source-controlled closure
 
-After Section C is verified:
-
-- [ ] Update Issue #2 with evidence and close it.
-- [ ] Update README and Current state to Operational Release.
-- [ ] Freeze the operating model, new-project runbook, privacy assurance and private-file retention rules.
-- [ ] Run final unit, compatibility, package, privacy, security and reproducible-build checks.
+- [x] Update Issue #2 with evidence and authorize closure.
+- [x] Update README and Current state to the immutable-release gate.
+- [x] Freeze the operating model, new-project runbook, privacy assurance and private-file retention rules.
+- [x] Run final unit, compatibility, package, privacy, security and reproducible-build checks on the GitHub-Final PR head.
+- [ ] Merge the GitHub-Final PR through the protected `main` workflow.
 - [ ] Verify the release tag exactly matches package version: `core-v1.5.0`.
 - [ ] Push the immutable tag and allow the release workflow to create checksummed assets and provenance.
 - [ ] Verify release assets, checksums, package metadata, provenance and clean installation.
-- [ ] Publish an anonymized GitHub-Final Acceptance Report and Release Lock.
+- [ ] Publish the final anonymized GitHub-Final Acceptance Report and Release Lock.
 - [ ] Confirm no private project identifier, filename, path, hash, report, business fact or cloud link entered Git history or release assets.
 
 ## E. Completion decision
 
-GitHub-Final may be declared `PASS_FOR_OPERATIONAL_RELEASE` only after every hard item above passes. This closes the initial development program for IntelliDue Production Baseline v1.0.0 and Public Core v1.5.0.
+GitHub-Final may be declared `PASS_FOR_OPERATIONAL_RELEASE` only after every remaining item in Section D passes. This closes the initial development program for IntelliDue Production Baseline v1.0.0 and Public Core v1.5.0.
 
 The completion statement is system-level and phase-specific. It does not assert that every private project is Final Full DD or investment-ready, and it does not prevent future versioned improvements.
