@@ -1,21 +1,63 @@
 from __future__ import annotations
-import argparse, json, sys
-from .validators import validate_state, validate_release_lock, validate_zip
+
+import argparse
+import json
+
+from .contracts import SCHEMA_VERSION
 from .manifest import save_manifest
+from .validators import (
+    validate_contract_files,
+    validate_manifest,
+    validate_package_validation,
+    validate_release_lock,
+    validate_state,
+    validate_zip,
+)
+
+
+def _result(command: str, issues) -> int:
+    payload = {
+        "contract_version": SCHEMA_VERSION,
+        "command": command,
+        "ok": not issues,
+        "issues": [issue.to_dict() for issue in issues],
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0 if not issues else 1
+
 
 def main(argv=None):
-    p=argparse.ArgumentParser(prog='intellidue')
-    sub=p.add_subparsers(dest='cmd',required=True)
-    for name in ('validate-state','validate-lock','validate-package'):
-        q=sub.add_parser(name); q.add_argument('path')
-    q=sub.add_parser('build-manifest'); q.add_argument('root'); q.add_argument('output')
-    a=p.parse_args(argv)
-    if a.cmd=='validate-state': errors=validate_state(a.path)
-    elif a.cmd=='validate-lock': errors=validate_release_lock(a.path)
-    elif a.cmd=='validate-package': errors=validate_zip(a.path)
-    else:
-        save_manifest(a.root,a.output); print(a.output); return 0
-    print(json.dumps({'ok':not errors,'errors':errors},indent=2))
-    return 0 if not errors else 1
+    parser = argparse.ArgumentParser(prog="intellidue")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    for name in ("validate-state", "validate-lock", "validate-validation", "validate-manifest", "validate-package"):
+        command = sub.add_parser(name)
+        command.add_argument("path")
+    command = sub.add_parser("validate-contract")
+    command.add_argument("--state", required=True)
+    command.add_argument("--lock", required=True)
+    command.add_argument("--validation", required=True)
+    command = sub.add_parser("build-manifest")
+    command.add_argument("root")
+    command.add_argument("output")
 
-if __name__=='__main__': raise SystemExit(main())
+    args = parser.parse_args(argv)
+    if args.cmd == "validate-state":
+        return _result(args.cmd, validate_state(args.path))
+    if args.cmd == "validate-lock":
+        return _result(args.cmd, validate_release_lock(args.path))
+    if args.cmd == "validate-validation":
+        return _result(args.cmd, validate_package_validation(args.path))
+    if args.cmd == "validate-manifest":
+        return _result(args.cmd, validate_manifest(args.path))
+    if args.cmd == "validate-package":
+        return _result(args.cmd, validate_zip(args.path))
+    if args.cmd == "validate-contract":
+        return _result(args.cmd, validate_contract_files(args.state, args.lock, args.validation))
+
+    save_manifest(args.root, args.output)
+    print(json.dumps({"contract_version": SCHEMA_VERSION, "command": args.cmd, "ok": True, "output": args.output}, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
