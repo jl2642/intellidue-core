@@ -1,4 +1,4 @@
-# Schema and Promotion Error Codes
+# Schema, Promotion and Private Runtime Error Codes
 
 ## Schema and contract
 
@@ -56,9 +56,7 @@
 - `ROLLBACK_REASON_REQUIRED`
 - `INJECTED_FAILURE`
 
-Codes are machine-readable and stable within schema contract version `1.0.0`. New codes may be added compatibly; existing code meanings are not silently changed.
-
-## CLI and release-package additions
+## CLI and release package
 
 - `CLI_USAGE_ERROR`
 - `INTERNAL_ERROR`
@@ -88,4 +86,35 @@ Codes are machine-readable and stable within schema contract version `1.0.0`. Ne
 - `PACKAGE_MANIFEST_ROOT_MISMATCH`
 - `PACKAGE_ID_ROOT_MISMATCH`
 
-CLI exit-code meanings and package-format compatibility are frozen in `docs/cli-contract.md` and `docs/package-format.md`.
+## Private runtime adapter
+
+- `PRIVATE_PROJECT_ROOT_MISSING`
+- `PRIVATE_PROJECT_ROOT_NOT_DIRECTORY`
+- `PRIVATE_PROJECT_ROOT_SYMLINK`
+- `PRIVATE_PATH_INVALID`
+- `PRIVATE_PATH_RESOLVE_FAILED`
+- `PRIVATE_PATH_ESCAPE`
+- `PRIVATE_PATH_SYMLINK`
+- `PRIVATE_CONTROL_FILE_MISSING`
+- `PRIVATE_PROJECT_ID_MISMATCH`
+- `PRIVATE_STATE_NOT_CURRENT`
+- `PRIVATE_VALIDATION_NOT_PASS`
+- `PRIVATE_PRODUCT_CLASS_DUPLICATE`
+- `PRIVATE_REQUIRED_PRODUCT_CLASS_MISSING`
+- `PRIVATE_PRODUCT_ROOT_MISSING`
+- `PRIVATE_PRODUCT_ROOT_NOT_DIRECTORY`
+- `PRIVATE_PRODUCT_ROOT_EMPTY`
+- `PRIVATE_PRODUCT_ROOT_OVERLAP`
+- `PRIVATE_PRODUCT_SYMLINK`
+- `PRIVATE_PRODUCT_SPECIAL_FILE`
+- `PRIVATE_PRODUCT_CASE_COLLISION`
+- `PRIVATE_OUTPUT_CASE_COLLISION`
+- `PRIVATE_RUNTIME_ROOT_MISSING`
+- `PRIVATE_RUNTIME_ROOT_INVALID`
+- `PRIVATE_RUNTIME_PROJECT_CONFLICT`
+- `PRIVATE_RUNTIME_RELEASE_ID_MISMATCH`
+- `PRIVATE_RUNTIME_PRODUCT_MISSING`
+- `PRIVATE_RUNTIME_CURRENT_MISMATCH`
+- `PRIVATE_CONTROL_HASH_MISMATCH`
+
+Codes are machine-readable and stable within schema contract version `1.0.0`. Private-runtime codes are stable within adapter contract version `1.0.0`. New codes may be added compatibly; existing code meanings are not silently changed.
