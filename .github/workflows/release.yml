@@ -9,7 +9,7 @@ on:
       release_tag:
         description: Existing-style release tag used for a dry-run build
         required: true
-        default: core-v1.4.0
+        default: core-v1.5.0
       publish:
         description: Publishing is allowed only for an actual pushed tag
         required: true
