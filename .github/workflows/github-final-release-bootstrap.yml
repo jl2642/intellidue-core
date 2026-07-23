@@ -1,10 +1,9 @@
 name: github-final-release-bootstrap
 
 on:
-  push:
-    branches: [github-final/release-bootstrap]
-    paths:
-      - '.github/workflows/github-final-release-bootstrap.yml'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -18,6 +17,7 @@ env:
 jobs:
   release:
     name: create immutable operational release
+    if: github.head_ref == 'github-final/release-bootstrap'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout accepted main commit
