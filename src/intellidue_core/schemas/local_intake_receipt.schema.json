@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/local_intake_receipt.schema.json",
+  "title": "LocalIntakeReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "transaction_id",
+    "status",
+    "analysis_performed",
+    "professional_conclusions_generated",
+    "source_root_mutated",
+    "counts",
+    "hashes",
+    "storage"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "transaction_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["READY_FOR_U_MINUS_1", "BLOCKED", "FAILED"]},
+    "analysis_performed": {"const": false},
+    "professional_conclusions_generated": {"const": false},
+    "source_root_mutated": {"const": false},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["physical_entries", "eligible_files", "hash_success", "hash_fail", "unique_sources", "duplicate_groups", "unreadable_files"],
+      "properties": {
+        "physical_entries": {"type": "integer", "minimum": 0},
+        "eligible_files": {"type": "integer", "minimum": 0},
+        "hash_success": {"type": "integer", "minimum": 0},
+        "hash_fail": {"type": "integer", "minimum": 0},
+        "unique_sources": {"type": "integer", "minimum": 0},
+        "duplicate_groups": {"type": "integer", "minimum": 0},
+        "unreadable_files": {"type": "integer", "minimum": 0}
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package_sha256"],
+      "properties": {"package_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"}}
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["staging_status", "drive_status", "file_library_status"],
+      "properties": {
+        "staging_status": {"enum": ["READY", "BLOCKED", "NOT_USED"]},
+        "drive_status": {"enum": ["READY", "PENDING", "UNAVAILABLE", "NOT_USED"]},
+        "file_library_status": {"enum": ["READY", "PENDING", "UNAVAILABLE", "NOT_USED"]}
+      }
+    },
+    "exceptions": {"type": "array", "items": {"type": "string"}}
+  }
+}
