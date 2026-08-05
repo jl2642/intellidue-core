@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -8,10 +9,9 @@ from intellidue_core.professional_delivery import (
     validate_professional_document,
 )
 
-SHA = "0" * 64
-
 
 def _product(product_id, role, lifecycle, pack, parents=()):
+    payload = product_id.encode("utf-8")
     return {
         "product_id": product_id,
         "title": product_id.replace("_", " ").title(),
@@ -20,9 +20,9 @@ def _product(product_id, role, lifecycle, pack, parents=()):
         "reader_status": "READER" if pack == "CLEAN_READER" else ("CONTROL" if pack == "WORKPAPER" else "AUDIT"),
         "delivery_pack": pack,
         "authority_level": "PRIMARY" if role == "INTEGRATED_DD" else "PARENT",
-        "path": f"{pack.lower()}/{product_id.lower()}.json",
-        "size_bytes": 1,
-        "sha256": SHA,
+        "path": f"{pack.lower()}/{product_id.lower()}.txt",
+        "size_bytes": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
         "parent_product_ids": list(parents),
     }
 
@@ -43,6 +43,11 @@ def _write_bundle(root: Path, *, complete: bool) -> None:
     ]
     if not complete:
         products = [p for p in products if p["product_id"] not in {"BASE", "SPECIALIST", "SUPPLEMENTAL", "WORKPAPER", "AUDIT"}]
+
+    for product in products:
+        path = root / product["path"]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(product["product_id"].encode("utf-8"))
 
     catalog = {
         "schema_version": "1.0.0",
@@ -67,7 +72,7 @@ def _write_bundle(root: Path, *, complete: bool) -> None:
         "packs": {
             name: {
                 "package_path": f"{name}.zip",
-                "sha256": SHA,
+                "sha256": "0" * 64,
                 "file_count": max(1, len(product_ids)),
                 "product_ids": product_ids or [f"MISSING_{name.upper()}"],
             }
@@ -107,8 +112,8 @@ def _write_bundle(root: Path, *, complete: bool) -> None:
     recovery = {
         "schema_version": "1.0.0",
         "system_package": "fixture-system.zip",
-        "expected_sha256": SHA,
-        "actual_sha256": SHA,
+        "expected_sha256": "0" * 64,
+        "actual_sha256": "0" * 64,
         "authority_status": "RECOVERY_PARENT",
         "required_contracts_verified": ["SOURCE_TO_REPORT", "RP_FINAL"],
         "gate": "RECOVERY_PASS",
@@ -156,7 +161,7 @@ def test_local_intake_schema_blocks_analysis():
             "duplicate_groups": 0,
             "unreadable_files": 0,
         },
-        "hashes": {"package_sha256": SHA},
+        "hashes": {"package_sha256": "0" * 64},
         "storage": {
             "staging_status": "READY",
             "drive_status": "READY",
