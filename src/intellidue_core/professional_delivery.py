@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 from typing import Any
+import zipfile
 
 from jsonschema import Draft202012Validator
 
@@ -24,6 +25,31 @@ PARENT_ROLE_GROUPS = {
         "FORMAL_NOT_READY",
     },
     "SUPPLEMENTAL": {"SUPPLEMENTAL_RESEARCH", "CURRENT_UPDATE"},
+}
+ACTIVE_ROLE_PACK = {
+    "READER_GUIDE": "CLEAN_READER",
+    "BASE_DD": "CLEAN_READER",
+    "SPECIALIST_FULL_REPORT": "CLEAN_READER",
+    "SPECIALIST_ISSUE_MEMO": "CLEAN_READER",
+    "SPECIALIST_ADVISER_PACK": "CLEAN_READER",
+    "FORMAL_NOT_READY": "CLEAN_READER",
+    "SUPPLEMENTAL_RESEARCH": "CLEAN_READER",
+    "CURRENT_UPDATE": "CLEAN_READER",
+    "INTEGRATED_DD": "CLEAN_READER",
+    "TRANSACTION_STRATEGY": "CLEAN_READER",
+    "INVESTMENT_MEMO": "CLEAN_READER",
+    "ACTION_BOOK": "CLEAN_READER",
+    "SOURCE_CONTROL": "WORKPAPER",
+    "FACT_PACK": "WORKPAPER",
+    "CALCULATION_MODEL": "WORKPAPER",
+    "PROFESSIONAL_WORKPAPER": "WORKPAPER",
+    "ACCEPTANCE": "INTERNAL_AUDIT",
+    "AUDIT_ARCHIVE": "INTERNAL_AUDIT",
+}
+PACK_READER_STATUS = {
+    "CLEAN_READER": {"READER", "SUPPORT"},
+    "WORKPAPER": {"CONTROL"},
+    "INTERNAL_AUDIT": {"AUDIT"},
 }
 SCHEMA_FILES = {
     "local_intake": "local_intake_receipt.schema.json",
@@ -51,6 +77,27 @@ def _schema(kind: str) -> dict[str, Any]:
     return json.loads(resource.read_text(encoding="utf-8"))
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _relative_path(root: Path, value: str, label: str) -> tuple[Path | None, list[str]]:
+    candidate = Path(value)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return None, [f"{label}: unsafe relative path: {value}"]
+    resolved_root = root.resolve()
+    resolved = (root / candidate).resolve()
+    try:
+        resolved.relative_to(resolved_root)
+    except ValueError:
+        return None, [f"{label}: path escapes delivery root: {value}"]
+    return resolved, []
+
+
 def validate_professional_document(kind: str, obj_or_path: dict[str, Any] | str | Path) -> list[str]:
     obj = obj_or_path if isinstance(obj_or_path, dict) else _load(obj_or_path)
     errors = Draft202012Validator(_schema(kind)).iter_errors(obj)
@@ -70,19 +117,28 @@ def validate_catalog(catalog: dict[str, Any]) -> list[str]:
     known = set(ids)
     for product in products:
         product_id = product["product_id"]
+        lifecycle = product["lifecycle"]
+        pack = product["delivery_pack"]
+        role = product["role"]
+        reader_status = product["reader_status"]
         for parent in product.get("parent_product_ids", []):
             if parent not in known:
                 issues.append(f"{product_id}: missing parent {parent}")
-        if product["lifecycle"] == "WITHDRAWN" and product["delivery_pack"] == "CLEAN_READER":
+        if lifecycle == "WITHDRAWN" and pack == "CLEAN_READER":
             issues.append(f"{product_id}: withdrawn product in Clean Reader")
-        if product["lifecycle"] == "NOT_APPLICABLE" and product["delivery_pack"] != "EXCLUDED":
+        if lifecycle == "SUPERSEDED" and pack == "CLEAN_READER":
+            issues.append(f"{product_id}: superseded product in Clean Reader")
+        if lifecycle == "NOT_APPLICABLE" and pack != "EXCLUDED":
             issues.append(f"{product_id}: not-applicable product must be excluded")
-        if (
-            product["lifecycle"] in {"CURRENT", "ACCEPTED_PARENT"}
-            and product["delivery_pack"] == "EXCLUDED"
-            and not product.get("exclusion_reason")
-        ):
+        if lifecycle in {"CURRENT", "ACCEPTED_PARENT"} and pack == "EXCLUDED" and not product.get("exclusion_reason"):
             issues.append(f"{product_id}: accepted/current excluded without reason")
+        if lifecycle in {"CURRENT", "ACCEPTED_PARENT"}:
+            required_pack = ACTIVE_ROLE_PACK.get(role)
+            if required_pack and pack != required_pack:
+                issues.append(f"{product_id}: active role {role} must be in {required_pack}")
+            allowed_status = PACK_READER_STATUS.get(pack)
+            if allowed_status and reader_status not in allowed_status:
+                issues.append(f"{product_id}: reader_status {reader_status} incompatible with {pack}")
     return issues
 
 
@@ -102,7 +158,7 @@ def validate_master_delivery(master: dict[str, Any], catalog: dict[str, Any]) ->
     roles_present = {
         product["role"]
         for product in products.values()
-        if product["lifecycle"] not in {"WITHDRAWN", "ARCHIVED", "NOT_APPLICABLE"}
+        if product["lifecycle"] not in {"WITHDRAWN", "ARCHIVED", "NOT_APPLICABLE", "SUPERSEDED"}
     }
     for role in ROLE_REQUIRED:
         if role not in roles_present:
@@ -114,10 +170,7 @@ def validate_master_delivery(master: dict[str, Any], catalog: dict[str, Any]) ->
             issues.append(f"missing required parent group: {group}")
         elif all(product["lifecycle"] == "NOT_APPLICABLE" for product in group_products):
             continue
-        elif not any(
-            product["lifecycle"] in {"CURRENT", "ACCEPTED_PARENT", "SUPERSEDED"}
-            for product in group_products
-        ):
+        elif not any(product["lifecycle"] in {"CURRENT", "ACCEPTED_PARENT", "SUPERSEDED"} for product in group_products):
             issues.append(f"no accepted product in parent group: {group}")
 
     for product_id, product in products.items():
@@ -181,6 +234,71 @@ def validate_system_recovery_receipt(receipt: dict[str, Any]) -> list[str]:
     return []
 
 
+def _validate_product_files(root: Path, catalog: dict[str, Any]) -> list[str]:
+    issues: list[str] = []
+    for product in catalog["products"]:
+        if product["delivery_pack"] == "EXCLUDED" or product["lifecycle"] == "NOT_APPLICABLE":
+            continue
+        product_id = product["product_id"]
+        product_path, path_issues = _relative_path(root, product["path"], product_id)
+        issues.extend(path_issues)
+        if product_path is None:
+            continue
+        if not product_path.is_file():
+            issues.append(f"{product_id}: entity file missing: {product['path']}")
+            continue
+        if product_path.stat().st_size != product["size_bytes"]:
+            issues.append(f"{product_id}: entity file size mismatch")
+        if _sha256(product_path) != product["sha256"]:
+            issues.append(f"{product_id}: entity file sha256 mismatch")
+    return issues
+
+
+def _validate_pack_files(root: Path, master: dict[str, Any]) -> list[str]:
+    issues: list[str] = []
+    for pack_name, pack in master["packs"].items():
+        package_path, path_issues = _relative_path(root, pack["package_path"], f"{pack_name} package")
+        issues.extend(path_issues)
+        if package_path is None:
+            continue
+        if not package_path.is_file():
+            issues.append(f"{pack_name}: package file missing: {pack['package_path']}")
+            continue
+        if _sha256(package_path) != pack["sha256"]:
+            issues.append(f"{pack_name}: package sha256 mismatch")
+        if not zipfile.is_zipfile(package_path):
+            issues.append(f"{pack_name}: package is not a ZIP archive")
+            continue
+        try:
+            with zipfile.ZipFile(package_path) as archive:
+                bad_member = archive.testzip()
+                if bad_member is not None:
+                    issues.append(f"{pack_name}: ZIP CRC failure: {bad_member}")
+                members = [item for item in archive.infolist() if not item.is_dir()]
+                if len(members) != pack["file_count"]:
+                    issues.append(f"{pack_name}: package file_count mismatch")
+                names = [item.filename for item in members]
+                if len(names) != len(set(names)):
+                    issues.append(f"{pack_name}: duplicate ZIP member path")
+                for name in names:
+                    member = Path(name)
+                    if member.is_absolute() or ".." in member.parts or "\\" in name:
+                        issues.append(f"{pack_name}: unsafe ZIP member path: {name}")
+        except (OSError, zipfile.BadZipFile) as exc:
+            issues.append(f"{pack_name}: ZIP inspection failed: {exc}")
+    return issues
+
+
+def _validate_authority_files(root: Path, master: dict[str, Any]) -> list[str]:
+    issues: list[str] = []
+    for authority_name, value in master["authority_files"].items():
+        path, path_issues = _relative_path(root, value, f"authority {authority_name}")
+        issues.extend(path_issues)
+        if path is not None and not path.is_file():
+            issues.append(f"authority {authority_name}: file missing: {value}")
+    return issues
+
+
 def validate_professional_delivery_bundle(root: str | Path) -> list[str]:
     root = Path(root)
     catalog = _load(root / "product_catalog.json")
@@ -201,20 +319,9 @@ def validate_professional_delivery_bundle(root: str | Path) -> list[str]:
     issues.extend(validate_master_delivery(master, catalog))
     issues.extend(validate_source_review_coverage(coverage))
     issues.extend(validate_system_recovery_receipt(recovery))
-
-    for product in catalog["products"]:
-        if product["delivery_pack"] == "EXCLUDED" or product["lifecycle"] == "NOT_APPLICABLE":
-            continue
-        product_path = root / product["path"]
-        product_id = product["product_id"]
-        if not product_path.is_file():
-            issues.append(f"{product_id}: entity file missing: {product['path']}")
-            continue
-        if product_path.stat().st_size != product["size_bytes"]:
-            issues.append(f"{product_id}: entity file size mismatch")
-        actual_sha = hashlib.sha256(product_path.read_bytes()).hexdigest()
-        if actual_sha != product["sha256"]:
-            issues.append(f"{product_id}: entity file sha256 mismatch")
+    issues.extend(_validate_product_files(root, catalog))
+    issues.extend(_validate_pack_files(root, master))
+    issues.extend(_validate_authority_files(root, master))
     return sorted(set(issues))
 
 
