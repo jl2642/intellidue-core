@@ -10,7 +10,9 @@ It adds:
 - product catalogs with lifecycle, parentage, authority, and pack placement;
 - RP-Final Master Delivery contracts for Clean Reader, Workpaper, and Internal Audit packs;
 - system-recovery receipts that bind recovery to authority and hash verification;
-- a professional-delivery validator that rejects memo-only or incomplete delivery bundles.
+- a professional-delivery validator that rejects memo-only or incomplete delivery bundles;
+- active role-to-pack rules so reader, workpaper, and audit products cannot be silently misplaced;
+- entity-file, subpack ZIP, authority-file, size, file-count, CRC, safe-path, and SHA-256 verification.
 
 The controls are project-neutral. They do not contain private source material, case names,
 transaction facts, prices, or diligence conclusions.
