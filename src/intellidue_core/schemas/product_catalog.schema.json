@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/product_catalog.schema.json",
+  "title": "ProductCatalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "release_id", "products"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "release_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "products": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/product"}}
+  },
+  "$defs": {
+    "relativePath": {"type": "string", "minLength": 1, "maxLength": 300, "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["product_id", "title", "role", "lifecycle", "reader_status", "delivery_pack", "authority_level", "path", "size_bytes", "sha256", "parent_product_ids"],
+      "properties": {
+        "product_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,95}$"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 300},
+        "role": {"enum": ["SOURCE_CONTROL", "FACT_PACK", "CALCULATION_MODEL", "PROFESSIONAL_WORKPAPER", "BASE_DD", "SPECIALIST_FULL_REPORT", "SPECIALIST_ISSUE_MEMO", "SPECIALIST_ADVISER_PACK", "FORMAL_NOT_READY", "SUPPLEMENTAL_RESEARCH", "CURRENT_UPDATE", "INTEGRATED_DD", "TRANSACTION_STRATEGY", "INVESTMENT_MEMO", "ACTION_BOOK", "READER_GUIDE", "ACCEPTANCE", "AUDIT_ARCHIVE"]},
+        "lifecycle": {"enum": ["CURRENT", "ACCEPTED_PARENT", "SUPERSEDED", "WITHDRAWN", "ARCHIVED", "NOT_APPLICABLE"]},
+        "reader_status": {"enum": ["READER", "SUPPORT", "CONTROL", "AUDIT"]},
+        "delivery_pack": {"enum": ["CLEAN_READER", "WORKPAPER", "INTERNAL_AUDIT", "EXCLUDED"]},
+        "authority_level": {"enum": ["PRIMARY", "PARENT", "DERIVED", "SUPPORTING", "NONE"]},
+        "path": {"$ref": "#/$defs/relativePath"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "parent_product_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,95}$"}},
+        "supersedes_product_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "performed_procedures": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "unperformed_procedures": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "limitations": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "inclusion_reason": {"type": "string", "maxLength": 500},
+        "exclusion_reason": {"type": "string", "maxLength": 500}
+      }
+    }
+  }
+}
