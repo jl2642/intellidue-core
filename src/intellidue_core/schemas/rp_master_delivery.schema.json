@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/rp_master_delivery.schema.json",
+  "title": "RPMasterDelivery",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "release_id", "status", "product_catalog_path", "packs", "authority_files", "decision_boundaries"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "release_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "status": {"enum": ["CANDIDATE", "PASS", "FAIL"]},
+    "product_catalog_path": {"type": "string", "minLength": 1},
+    "required_roles": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "packs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clean_reader", "workpaper", "internal_audit"],
+      "properties": {
+        "clean_reader": {"$ref": "#/$defs/pack"},
+        "workpaper": {"$ref": "#/$defs/pack"},
+        "internal_audit": {"$ref": "#/$defs/pack"}
+      }
+    },
+    "authority_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["guide", "manifest", "acceptance", "receipt"],
+      "properties": {
+        "guide": {"type": "string", "minLength": 1},
+        "manifest": {"type": "string", "minLength": 1},
+        "acceptance": {"type": "string", "minLength": 1},
+        "receipt": {"type": "string", "minLength": 1}
+      }
+    },
+    "decision_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_ready", "transaction_authority", "restricted_outputs"],
+      "properties": {
+        "decision_ready": {"type": "boolean"},
+        "transaction_authority": {"type": "string", "minLength": 1},
+        "restricted_outputs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package_path", "sha256", "file_count", "product_ids"],
+      "properties": {
+        "package_path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "file_count": {"type": "integer", "minimum": 1},
+        "product_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+      }
+    }
+  }
+}
