@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.intellidue.dev/v1/source_review_coverage.schema.json",
+  "title": "SourceReviewCoverage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "unique_source_count", "dispositions", "p0_p1", "professional_review_claim", "coverage_complete"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9_-]{2,63}$"},
+    "unique_source_count": {"type": "integer", "minimum": 0},
+    "dispositions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deep_reviewed", "targeted_reviewed", "duplicate", "superseded", "unreadable", "out_of_scope", "deferred"],
+      "properties": {
+        "deep_reviewed": {"type": "integer", "minimum": 0},
+        "targeted_reviewed": {"type": "integer", "minimum": 0},
+        "duplicate": {"type": "integer", "minimum": 0},
+        "superseded": {"type": "integer", "minimum": 0},
+        "unreadable": {"type": "integer", "minimum": 0},
+        "out_of_scope": {"type": "integer", "minimum": 0},
+        "deferred": {"type": "integer", "minimum": 0}
+      }
+    },
+    "p0_p1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "completed", "open_material_exceptions"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "completed": {"type": "integer", "minimum": 0},
+        "open_material_exceptions": {"type": "integer", "minimum": 0}
+      }
+    },
+    "professional_review_claim": {"enum": ["FULL", "PARTIAL", "NONE"]},
+    "coverage_complete": {"type": "boolean"},
+    "reviewer_count": {"type": "integer", "minimum": 0},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  }
+}
