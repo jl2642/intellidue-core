@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from importlib.resources import files
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -200,6 +201,20 @@ def validate_professional_delivery_bundle(root: str | Path) -> list[str]:
     issues.extend(validate_master_delivery(master, catalog))
     issues.extend(validate_source_review_coverage(coverage))
     issues.extend(validate_system_recovery_receipt(recovery))
+
+    for product in catalog["products"]:
+        if product["delivery_pack"] == "EXCLUDED" or product["lifecycle"] == "NOT_APPLICABLE":
+            continue
+        product_path = root / product["path"]
+        product_id = product["product_id"]
+        if not product_path.is_file():
+            issues.append(f"{product_id}: entity file missing: {product['path']}")
+            continue
+        if product_path.stat().st_size != product["size_bytes"]:
+            issues.append(f"{product_id}: entity file size mismatch")
+        actual_sha = hashlib.sha256(product_path.read_bytes()).hexdigest()
+        if actual_sha != product["sha256"]:
+            issues.append(f"{product_id}: entity file sha256 mismatch")
     return sorted(set(issues))
 
 
