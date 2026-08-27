@@ -13,19 +13,30 @@ Before analysis begins, the project owner should provide:
 
 The project owner should not reorganize or rename the original source room solely for AI convenience. The original folder structure should be preserved as evidence, with a controlled staged copy used for processing.
 
+For a local or connected source room, ChatGPT should first issue a project-specific technical-intake prompt to a file-capable local agent (for example Codex, WorkBuddy or QClaw). The local agent performs custody/intake only: inventory, hashes, duplicate/version candidates, archive lineage, readability/access exceptions, controlled staging and handoff preparation. It does not perform professional diligence analysis.
+
+Storage roles should remain distinct:
+
+- the local/source room is the original-source authority;
+- an approved cloud data room such as Google Drive may provide the full or granular cloud source layer;
+- the ChatGPT project workspace receives controlled analytical access, normally using ZIP-first handoff for bulk source populations and exact-file retrieval as required;
+- low-priority or unsuitable sources may remain local-only if they remain registered and traceable with path, hash, metadata, disposition and reason.
+
+Local-only, registered, synchronized or packaged sources are not thereby professionally reviewed.
+
 ## B. ChatGPT project bootstrap
 
 The authorized ChatGPT workspace should:
 
 1. create the immutable project identity and intake timestamp;
-2. inventory every file and compute duplicate identities;
+2. reconcile the local/source-room inventory, controlled staging and any in-scope cloud/ChatGPT handoff before professional production;
 3. record source disposition, review depth and exclusions;
 4. distinguish physical-file count, unique-source count, reviewed key sources and extracted information units;
 5. create the Question Map, Evidence Register, conflict register, calculation register, open-request list, critical gates and blocked-output list;
 6. confirm whether the available evidence supports only a data-gap notice, preliminary issue report, conditional DD or a stronger product;
 7. establish Reader and Control package boundaries before writing management products.
 
-No report may claim that every registered file was professionally reviewed unless the workpapers actually evidence that procedure.
+The technical intake/reconciliation gate must pass before professional production begins. No report may claim that every registered file was professionally reviewed unless the workpapers actually evidence that procedure.
 
 ## C. Professional production sequence
 
