@@ -23,13 +23,16 @@ The project owner:
 
 The ChatGPT workspace:
 
-- inventories, deduplicates and classifies source material;
+- orchestrates technical intake of local/connected source rooms before professional analysis, including project-specific prompts for file-capable local agents when needed;
+- reconciles registered sources across the original source room, controlled staging and any in-scope cloud/ChatGPT handoff;
 - defines Questions, Evidence, conflicts, critical gates and blocked outputs;
 - performs document analysis, calculations, cross-checking, web research when authorized and professional synthesis;
 - produces workpapers, specialist reports, integrated reports, management products and bespoke follow-up deliverables;
 - preserves uncertainty and does not promote unsupported facts, valuation outputs or decision readiness;
 - runs content, calculation, citation, consistency, publication and clean-chat acceptance;
 - maps incremental evidence only to affected products and preserves prior accepted releases.
+
+Technical intake agents do not replace ChatGPT's professional analysis. Registration, local retention, cloud synchronization and ZIP packaging are custody states, not professional-review states.
 
 ### IntelliDue Core / GitHub
 
@@ -45,7 +48,11 @@ The public GitHub repository:
 
 ### Private storage
 
-Private File Library and approved cloud data rooms hold real project sources and private products. They are separate from the public repository. Access control, sharing permissions, retention and deletion remain the responsibility of the storage owner and platform administrator.
+Private File Library and approved cloud data rooms hold real project sources and private products. They are separate from the public repository.
+
+The original local/source room remains the original-source authority unless the project owner establishes another formal records authority. Approved cloud storage may hold full/granular source mirrors, while the ChatGPT workspace may use controlled ZIP-first or selective analytical handoff. Sources that remain local-only must stay registered and traceable; local-only does not mean reviewed.
+
+Access control, sharing permissions, retention and deletion remain the responsibility of the storage owner and platform administrator.
 
 ## 3. Product authority
 
